@@ -9,7 +9,6 @@ using VeroEngine.Core.NodeTree;
 
 namespace VeroEngine.Core.Generic;
 
-
 public struct Collections
 {
     public static Version EngineVersion;
@@ -24,7 +23,7 @@ public struct Collections
     {
         Log.Info("Loading app config...");
 
-        string filePath = "Game/App.json";
+        var filePath = "Game/App.json";
 
         // Check if the config file exists
         if (!File.Exists(filePath))
@@ -35,7 +34,7 @@ public struct Collections
 
         try
         {
-            string jsonContent = File.ReadAllText(filePath);
+            var jsonContent = File.ReadAllText(filePath);
             AppConfig = SerialisedApp.Deserialize(jsonContent);
 
             Log.Info("App config loaded successfully.");
@@ -53,6 +52,7 @@ public struct Collections
             Log.Error($"Unexpected error occurred while loading app config: {ex.Message}");
         }
     }
+
     public static void GetVersionsFromEngine()
     {
         var assembly = typeof(Collections).Assembly;
@@ -61,13 +61,10 @@ public struct Collections
 
     public static string GetUserDirectory() // C:/Users/{USER}/AppData/Roaming/{DATADIR}/
     {
-        string userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        
-        string fullPath = Path.Combine(userProfilePath, "AppData", "Roaming", AppConfig.UserData);
-        if (!Directory.Exists(fullPath))
-        {
-            Directory.CreateDirectory(fullPath);
-        }
+        var userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+        var fullPath = Path.Combine(userProfilePath, "AppData", "Roaming", AppConfig.UserData);
+        if (!Directory.Exists(fullPath)) Directory.CreateDirectory(fullPath);
 
         return fullPath + Path.DirectorySeparatorChar; // Add trailing slash
     }

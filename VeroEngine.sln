@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VeroEngine.Game", "VeroEngi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VeroEngine.Editor", "VeroEngine.Editor\VeroEngine.Editor.csproj", "{28D52324-3220-49B5-A197-1572D85D7B11}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptingAssembly", "ScriptingAssembly\ScriptingAssembly.csproj", "{FC96A52D-AF1C-4278-8C0D-6EFCAA240D8B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{28D52324-3220-49B5-A197-1572D85D7B11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28D52324-3220-49B5-A197-1572D85D7B11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28D52324-3220-49B5-A197-1572D85D7B11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC96A52D-AF1C-4278-8C0D-6EFCAA240D8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC96A52D-AF1C-4278-8C0D-6EFCAA240D8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC96A52D-AF1C-4278-8C0D-6EFCAA240D8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC96A52D-AF1C-4278-8C0D-6EFCAA240D8B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

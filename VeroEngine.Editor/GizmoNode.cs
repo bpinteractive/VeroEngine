@@ -1,4 +1,3 @@
-using VeroEngine.Core.NodeTree;
 using VeroEngine.Core.NodeTree.Nodes;
 using VeroEngine.Core.Rendering;
 
@@ -8,6 +7,7 @@ public class GizmoNode : Node
 {
     private MeshNode _moveNode;
     private MeshNode _rotateNode;
+
     public override void Create()
     {
         _moveNode = new MeshNode();
@@ -15,7 +15,7 @@ public class GizmoNode : Node
         _moveNode.Name = "move";
         _moveNode.DepthTest = false;
         AddChild(_moveNode);
-        
+
         _rotateNode = new MeshNode();
         _rotateNode.Name = "rotate";
         _rotateNode.AddChild(_moveNode);

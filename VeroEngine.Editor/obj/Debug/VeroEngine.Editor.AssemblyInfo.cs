@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VeroEngine.Editor")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a6769e5d4e7de682d014fb9d97ed5e5bcfd7d611")]
 [assembly: System.Reflection.AssemblyProductAttribute("VeroEngine.Editor")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VeroEngine.Editor")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

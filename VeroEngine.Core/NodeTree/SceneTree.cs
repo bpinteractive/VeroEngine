@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using VeroEngine.Core.Generic;
 using VeroEngine.Core.Mathematics;
 using VeroEngine.Core.NodeTree.Nodes;
@@ -36,6 +37,26 @@ public class SceneTree
             1000f
         );
     }
+
+    public static Node CreateNode(string nodeType, Assembly customAssembly)
+    {
+        var type = GetTypeFromAssembly(typeof(VeroWindow).Assembly, "VeroEngine.Core.NodeTree.Nodes." + nodeType)
+                   ?? GetTypeFromAssembly(customAssembly, "ScriptingAssembly." + nodeType);
+
+        if (type != null && Activator.CreateInstance(type) is Node instance)
+        {
+            instance.Name = "InstancedNode";
+            return instance;
+        }
+
+        return null;
+    }
+
+    private static Type GetTypeFromAssembly(Assembly assembly, string typeName)
+    {
+        return assembly?.GetType(typeName);
+    }
+
 
     public Node GetRoot()
     {

@@ -1567,6 +1567,19 @@
           "lib/netstandard1.3/System.Xml.XDocument.dll": {}
         }
       },
+      "ScriptingAssembly/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "dependencies": {
+          "VeroEngine.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/ScriptingAssembly.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/ScriptingAssembly.dll": {}
+        }
+      },
       "VeroEngine.Core/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v6.0",
@@ -5152,6 +5165,11 @@
         "system.xml.xdocument.nuspec"
       ]
     },
+    "ScriptingAssembly/1.0.0": {
+      "type": "project",
+      "path": "../ScriptingAssembly/ScriptingAssembly.csproj",
+      "msbuildProject": "../ScriptingAssembly/ScriptingAssembly.csproj"
+    },
     "VeroEngine.Core/1.0.0": {
       "type": "project",
       "path": "../VeroEngine.Core/VeroEngine.Core.csproj",
@@ -5162,6 +5180,7 @@
     "net6.0": [
       "ImGui.NET >= 1.90.0.1",
       "OpenTK >= 4.8.1",
+      "ScriptingAssembly >= 1.0.0",
       "VeroEngine.Core >= 1.0.0"
     ]
   },
@@ -5198,6 +5217,9 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "projectReferences": {
+            "D:\\VeroEngine\\ScriptingAssembly\\ScriptingAssembly.csproj": {
+              "projectPath": "D:\\VeroEngine\\ScriptingAssembly\\ScriptingAssembly.csproj"
+            },
             "D:\\VeroEngine\\VeroEngine.Core\\VeroEngine.Core.csproj": {
               "projectPath": "D:\\VeroEngine\\VeroEngine.Core\\VeroEngine.Core.csproj"
             }

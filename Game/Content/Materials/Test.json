@@ -1,0 +1,9 @@
+{
+  "Shader": "VeroEngine.Basic",
+  "Uniforms": {
+    "Albedo": {
+      "Type": "tex",
+      "Value": "Textures/test.png"
+    }
+  }
+}

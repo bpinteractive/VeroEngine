@@ -15,10 +15,9 @@ public class CameraNode : Node
 
     public override void Draw()
     {
-        if(!Visible) return;
+        if (!Visible) return;
         _renderCamera.UpdatePosition(GlobalPosition);
         _renderCamera.SetRotation(GlobalRotation);
         base.Draw();
-        
     }
 }

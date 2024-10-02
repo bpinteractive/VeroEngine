@@ -9,12 +9,12 @@ public class SerialisedApp
     public string UserData { get; set; }
     public Resolution Resolution { get; set; }
     public DisplaySettings Display { get; set; }
-    
+
     public static SerialisedApp Deserialize(string jsonString)
     {
         return JsonSerializer.Deserialize<SerialisedApp>(jsonString);
     }
-    
+
     public string Serialize()
     {
         return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });

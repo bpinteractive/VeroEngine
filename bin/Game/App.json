@@ -1,0 +1,17 @@
+{
+  "Title": "VeroGame",
+  "Version": "1.0.0",
+  "StartScene": "Scenes/Test.Asset",
+  "UserData": "VeroTest",
+  "Resolution": {
+    "Width": 1920,
+    "Height": 1080
+  },
+  "Display": {
+    "EnableUiDock": true,
+    "FullScreen": false,
+    "VSync": true,
+    "FpsLimit": 300,
+    "Brightness": 1
+  }
+}

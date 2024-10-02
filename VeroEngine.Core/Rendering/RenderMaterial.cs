@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -48,6 +49,7 @@ public class RenderMaterial : IDisposable
 
     public static RenderMaterial Load(string name)
     {
+        Log.Info($"Loading material {name}");
         var filePath = Path.Combine("Game", "Content", $"{name}.json");
 
         try
@@ -58,8 +60,8 @@ public class RenderMaterial : IDisposable
         }
         catch (FileNotFoundException ex)
         {
-            Log.Error($"Material file not found: {ex.Message}");
-            return null;
+            return FromSerialised(new SerialisedMaterial
+                { Shader = "VeroEngine.Basic", Uniforms = new Dictionary<string, SerialisedUniform>() }); // fallback
         }
     }
 

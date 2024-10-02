@@ -63,9 +63,14 @@ public class Shader : IDisposable
         return FromSerialized(serializedShader, "VeroEngine.Missing");
     }
 
-    private static string GetCachePath(string name)
+    public static string GetCachePath(string name)
     {
         return Path.Combine(Collections.GetUserDirectory(), "PipelineCache", $"{name}.bin");
+    }
+    
+    public static string GetCachePath()
+    {
+        return Path.Combine(Collections.GetUserDirectory(), "PipelineCache");
     }
 
     private static string GetShaderFilePath(string name)

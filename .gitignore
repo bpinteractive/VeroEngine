@@ -25,7 +25,8 @@
 *.user
 .vs/
 
-[Bb]in/
+[Bb]in/*
+![Bb]in/Game
 [Oo]bj/
 _UpgradeReport_Files/
 [Pp]ackages/

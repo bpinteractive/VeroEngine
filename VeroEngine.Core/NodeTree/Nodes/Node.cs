@@ -11,6 +11,12 @@ public class Node : IDisposable
     private readonly List<Node> _children;
     private bool _disposed; // Tracks whether the node has been disposed.
 
+    public Vector3 GlobalPosition = new(0, 0, 0);
+    public Vector3 GlobalRotation = new(0, 0, 0);
+
+    public Vector3 GlobalScale = new(1, 1, 1);
+    public Node Parent;
+
     public Node()
     {
         _children = new List<Node>();
@@ -23,12 +29,6 @@ public class Node : IDisposable
     public Vector3 Rotation { get; set; } = new(0, 0, 0);
     public Vector3 Scale { get; set; } = new(1, 1, 1);
     public Vector3 Color { get; set; } = new(1, 1, 1);
-
-    public Vector3 GlobalPosition { get; set; } = new(0, 0, 0);
-    public Vector3 GlobalRotation { get; set; } = new(0, 0, 0);
-
-    public Vector3 GlobalScale { get; set; } = new(1, 1, 1);
-    public Node Parent { get; private set; }
 
     public IReadOnlyList<Node> Children => _children;
 

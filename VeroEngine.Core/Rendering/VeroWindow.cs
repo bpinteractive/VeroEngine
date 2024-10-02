@@ -5,6 +5,7 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using VeroEngine.Core.Generic;
 using VeroEngine.Core.NodeTree;
 using static VeroEngine.Core.Generic.NativeMethods;
@@ -55,6 +56,16 @@ public class VeroWindow : GameWindow
         // throw new Exception();
     }
 
+    public void GrabMouse()
+    {
+        CursorState = CursorState.Grabbed;
+    }
+
+    public void ReleaseMouse()
+    {
+        CursorState = CursorState.Normal;
+    }
+
     private void CurrentDomainException(object sender, UnhandledExceptionEventArgs e)
     {
         var ee = (Exception)e.ExceptionObject;
@@ -95,6 +106,7 @@ public class VeroWindow : GameWindow
         Collections.GetVersionsFromEngine();
         Collections.LoadAppConfig();
         if (Collections.AppConfig.Display.VSync) VSync = VSyncMode.On;
+        Title = Collections.AppConfig.Title;
         Title += " | OpenGL Version: " + GL.GetString(StringName.Version) + " | Vero Engine " +
                  Collections.EngineVersion.Build;
         Console.Title = "Vero Engine " + Collections.EngineVersion.Build;
@@ -107,6 +119,10 @@ public class VeroWindow : GameWindow
         Collections.SceneManager = new SceneManager();
 
         OnReady?.Invoke();
+        if (Collections.AppConfig.Display.FullScreen)
+        {
+            WindowState = WindowState.Maximized;
+        }
     }
 
     protected override void OnResize(ResizeEventArgs e)
@@ -130,7 +146,8 @@ public class VeroWindow : GameWindow
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
         GL.Enable(EnableCap.DepthTest);
         GL.Enable(EnableCap.CullFace);
-        // if (Collections.AppConfig.Display.EnableUiDock) ImGui.DockSpaceOverViewport(); // buggy
+        if (Collections.AppConfig.Display.EnableUiDock)
+            ImGui.DockSpaceOverViewport(null, ImGuiDockNodeFlags.PassthruCentralNode); // buggy
 
         SceneTree.DrawChildren(e.Time);
         OnDraw?.Invoke(e.Time);
@@ -138,9 +155,10 @@ public class VeroWindow : GameWindow
         GL.Disable(EnableCap.DepthTest);
         GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
         OnDrawGui?.Invoke(e.Time);
+        // ImGui.ShowStyleEditor();
         ImGui.Begin("Debug",
             ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoDocking |
-            ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoBackground);
+            ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoMouseInputs);
         ImGui.SetWindowPos(new Vector2(0, 0));
         ImGui.Text($"fps {(int)(1 / e.Time)}");
         ImGui.Text($"delta {e.Time}");
@@ -163,11 +181,64 @@ public class VeroWindow : GameWindow
         _controller.PressChar((char)e.Unicode);
     }
 
+    protected override void OnKeyDown(KeyboardKeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+
+        Keyboard.SetKeyDown(e.Key);
+    }
+
+    protected override void OnKeyUp(KeyboardKeyEventArgs e)
+    {
+        base.OnKeyUp(e);
+
+        Keyboard.SetKeyUp(e.Key);
+    }
+
+
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {
         base.OnMouseWheel(e);
 
         _controller.MouseScroll(e.Offset);
+    }
+
+    protected override void OnMouseMove(MouseMoveEventArgs e)
+    {
+        base.OnMouseMove(e);
+        Mouse.Position = new Mathematics.Vector2(e.Position.X, e.Position.Y);
+    }
+
+    protected override void OnMouseDown(MouseButtonEventArgs e)
+    {
+        base.OnMouseDown(e);
+
+        if (e.Button == MouseButton.Left)
+        {
+            Mouse.LeftButtonDown = true;
+            Mouse.LeftJustButtonDown = true;
+        }
+        else if (e.Button == MouseButton.Right)
+        {
+            Mouse.RightButtonDown = true;
+            Mouse.RightJustButtonDown = true;
+        }
+    }
+
+    protected override void OnMouseUp(MouseButtonEventArgs e)
+    {
+        base.OnMouseUp(e);
+
+        if (e.Button == MouseButton.Left)
+        {
+            Mouse.LeftButtonDown = false;
+            Mouse.LeftJustButtonDown = false;
+        }
+        else if (e.Button == MouseButton.Right)
+        {
+            Mouse.RightButtonDown = false;
+            Mouse.RightJustButtonDown = false;
+        }
     }
 
     protected override void Dispose(bool disposing)

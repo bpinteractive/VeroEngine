@@ -54,6 +54,33 @@ public class Camera
         return Matrix4.LookAt(_position.ToOpenTK(), _position.ToOpenTK() + front.ToOpenTK(), up.ToOpenTK());
     }
 
+    public Vector3 GetFront()
+    {
+        return new Vector3(
+            MathF.Cos(_yaw) * MathF.Cos(_pitch),
+            MathF.Sin(_pitch),
+            MathF.Sin(_yaw) * MathF.Cos(_pitch)
+        ).Normalize();
+    }
+
+    public Vector3 GetRight()
+    {
+        var front = new Vector3(
+            MathF.Cos(_yaw) * MathF.Cos(_pitch),
+            MathF.Sin(_pitch),
+            MathF.Sin(_yaw) * MathF.Cos(_pitch)
+        ).Normalize();
+        var right = Vector3.Cross(front, _up).Normalize();
+        var rollMatrix = Matrix4.CreateFromAxisAngle(front.ToOpenTK(), _roll);
+        right = right.Transform(rollMatrix).Normalize();
+        return right;
+    }
+
+    public Vector3 GetLeft()
+    {
+        return new Vector3(0, 0, 0) - GetRight();
+    }
+
 
     public void SetRotation(float yaw, float pitch, float roll)
     {

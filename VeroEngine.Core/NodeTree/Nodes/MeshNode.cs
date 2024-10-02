@@ -7,6 +7,7 @@ namespace VeroEngine.Core.NodeTree.Nodes;
 
 public class MeshNode : Node
 {
+    private string _material = "empty";
     private string _model;
     private RenderMesh _renderMesh;
     public bool DepthTest { get; set; } = true;
@@ -19,6 +20,17 @@ public class MeshNode : Node
             SetMesh(RenderMesh.FromModelFile(value)); // FIRE
         }
         get => _model;
+    }
+
+    public string Material
+    {
+        set
+        {
+            _material = value;
+            _renderMesh?.Material?.Dispose();
+            if (_renderMesh != null) _renderMesh.Material = RenderMaterial.Load(value);
+        }
+        get => _material;
     }
 
     public void SetMesh(RenderMesh mesh)

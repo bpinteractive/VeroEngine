@@ -23,7 +23,7 @@ public struct Collections
     {
         Log.Info("Loading app config...");
 
-        var filePath = "Game/App.json";
+        var filePath = Path.Combine("Game", "App.json");
 
         // Check if the config file exists
         if (!File.Exists(filePath))

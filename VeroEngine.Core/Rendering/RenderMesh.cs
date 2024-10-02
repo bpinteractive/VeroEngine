@@ -19,11 +19,11 @@ public class RenderMesh : IDisposable
     private int _vbo;
     private int _vertexCount;
     private bool disposed;
-    private readonly RenderMaterial material;
+    public RenderMaterial Material;
 
     public RenderMesh(float[] data, int[] indices, RenderMaterial mat)
     {
-        material = mat;
+        Material = mat;
         InitializeBuffers(data, indices);
     }
 
@@ -174,14 +174,14 @@ public class RenderMesh : IDisposable
 
     public void Render(Matrix4 model, Matrix4 view, Matrix4 projection, Vector3 color)
     {
-        if (material != null)
+        if (Material != null)
         {
-            material.Use();
+            Material.Use();
             var c = color.ToOpenTK();
-            GL.Uniform3(GL.GetUniformLocation(material.GetShader().Handle, "modulate_color"), ref c);
-            GL.UniformMatrix4(GL.GetUniformLocation(material.GetShader().Handle, "model"), false, ref model);
-            GL.UniformMatrix4(GL.GetUniformLocation(material.GetShader().Handle, "view"), false, ref view);
-            GL.UniformMatrix4(GL.GetUniformLocation(material.GetShader().Handle, "projection"), false,
+            GL.Uniform3(GL.GetUniformLocation(Material.GetShader().Handle, "modulate_color"), ref c);
+            GL.UniformMatrix4(GL.GetUniformLocation(Material.GetShader().Handle, "model"), false, ref model);
+            GL.UniformMatrix4(GL.GetUniformLocation(Material.GetShader().Handle, "view"), false, ref view);
+            GL.UniformMatrix4(GL.GetUniformLocation(Material.GetShader().Handle, "projection"), false,
                 ref projection);
 
             GL.BindVertexArray(_vao);
@@ -194,7 +194,7 @@ public class RenderMesh : IDisposable
     {
         if (!disposed)
         {
-            if (disposing) material?.Dispose();
+            if (disposing) Material?.Dispose();
 
             if (_vao != 0)
             {

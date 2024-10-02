@@ -16,6 +16,11 @@ public class ImGuiController : IDisposable
 {
     private static bool KHRDebugAvailable;
 
+    private readonly Vector2 _scaleFactor = Vector2.One;
+    private readonly bool CompatibilityProfile;
+
+    private readonly int GLVersion;
+
     private readonly List<char> PressedChars = new();
 
     //private Texture _fontTexture;
@@ -26,8 +31,6 @@ public class ImGuiController : IDisposable
     private int _indexBufferSize;
 
     private Shader _realShader;
-
-    private readonly Vector2 _scaleFactor = Vector2.One;
     private int _shader;
     private int _shaderFontTextureLocation;
     private int _shaderProjectionMatrixLocation;
@@ -38,9 +41,6 @@ public class ImGuiController : IDisposable
     private int _windowHeight;
 
     private int _windowWidth;
-    private readonly bool CompatibilityProfile;
-
-    private readonly int GLVersion;
 
     /// <summary>
     ///     Constructs a new ImGuiController.

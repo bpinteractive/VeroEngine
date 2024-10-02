@@ -10,21 +10,6 @@
         <ProjectReference Include="..\VeroEngine.Core\VeroEngine.Core.csproj"/>
     </ItemGroup>
 
-    <Target Name="PostBuild" AfterTargets="Build">
-        <Message Importance="high" Text="Copying Game folder to output..."/>
-
-        <!-- Create the destination folder if it doesn't exist -->
-        <MakeDir Directories="$(SolutionDir)bin\Game"/>
-
-        <!-- Copy all files recursively from Game folder to the output Game folder -->
-        <Copy SourceFiles="@(GameFiles)" DestinationFolder="$(SolutionDir)bin\Game\%(RecursiveDir)"/>
-    </Target>
-
-    <ItemGroup>
-        <!-- Include all files from the Game directory recursively -->
-        <GameFiles Include="$(SolutionDir)Game\**\*"/>
-    </ItemGroup>
-
     <ItemGroup>
         <!-- Exclude the Game directory from being compiled -->
         <None Remove="Game\**\*"/>

@@ -1,0 +1,16 @@
+D:\VeroEngine\bin\VeroEngine.Game.exe
+D:\VeroEngine\bin\VeroEngine.Game.deps.json
+D:\VeroEngine\bin\VeroEngine.Game.runtimeconfig.json
+D:\VeroEngine\bin\VeroEngine.Game.dll
+D:\VeroEngine\bin\VeroEngine.Game.pdb
+D:\VeroEngine\VeroEngine.Game\obj\Debug\VeroEngine.Game.csproj.AssemblyReference.cache
+D:\VeroEngine\VeroEngine.Game\obj\Debug\VeroEngine.Game.GeneratedMSBuildEditorConfig.editorconfig
+D:\VeroEngine\VeroEngine.Game\obj\Debug\VeroEngine.Game.AssemblyInfoInputs.cache
+D:\VeroEngine\VeroEngine.Game\obj\Debug\VeroEngine.Game.AssemblyInfo.cs
+D:\VeroEngine\VeroEngine.Game\obj\Debug\VeroEngine.Game.csproj.CoreCompileInputs.cache
+D:\VeroEngine\VeroEngine.Game\obj\Debug\VeroEngi.54EB4BA5.Up2Date
+D:\VeroEngine\VeroEngine.Game\obj\Debug\VeroEngine.Game.dll
+D:\VeroEngine\VeroEngine.Game\obj\Debug\refint\VeroEngine.Game.dll
+D:\VeroEngine\VeroEngine.Game\obj\Debug\VeroEngine.Game.pdb
+D:\VeroEngine\VeroEngine.Game\obj\Debug\VeroEngine.Game.genruntimeconfig.cache
+D:\VeroEngine\VeroEngine.Game\obj\Debug\ref\VeroEngine.Game.dll

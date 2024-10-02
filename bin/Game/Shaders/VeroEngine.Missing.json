@@ -1,0 +1,5 @@
+{
+	"FriendlyName":	"Error Shader",
+	"VertexShader": "empty_vert.glsl",
+	"FragmentShader": empty_frag.glsl""
+}

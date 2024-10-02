@@ -34,3 +34,6 @@ _UpgradeReport_Files/
 Thumbs.db
 Desktop.ini
 .DS_Store
+/VeroEngine.Editor/obj
+/ScriptingAssembly/bin
+/VeroEngine.Editor/obj

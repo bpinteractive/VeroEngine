@@ -22,6 +22,7 @@ internal class Program
     private static Node _newNodeParent;
 
     private static bool _gameSettingsMenuOpen = false;
+    private static bool _settingsMenuOpen = false;
 
     // Camera movement variables
     private static readonly float _cameraSpeed = 5.0f; // Speed of the camera movement
@@ -43,6 +44,20 @@ internal class Program
         {
             Collections.AppConfig.Display.EnableUiDock = true;
             Collections.AppConfig.Display.FullScreen = false;
+            
+            // Setup imgui styling here
+            ImGui.GetStyle().WindowRounding = 4;
+            ImGui.GetStyle().ChildRounding = 4;
+            ImGui.GetStyle().FrameRounding = 3;
+            ImGui.GetStyle().PopupRounding = 6;
+            ImGui.GetStyle().ScrollbarRounding = 12;
+            ImGui.GetStyle().GrabRounding = 6;
+            ImGui.GetStyle().TabRounding = 6;
+
+            ImGui.GetStyle().WindowTitleAlign.X = 0;
+            ImGui.GetStyle().WindowMenuButtonPosition = ImGuiDir.None;
+            ImGui.GetStyle().TabBarBorderSize = 2;
+            
         };
 
         wnd.OnDraw += delta =>
@@ -139,12 +154,29 @@ internal class Program
                 ImGui.End();
             }
 
+            if (_settingsMenuOpen)
+            {
+                ImGui.Begin("Editor Settings");
+                if (ImGui.Button("Close"))
+                {
+                    _settingsMenuOpen = false;
+                }
+                ImGui.Text("If you dont know what your doing this is useless!!!");
+                ImGui.ShowStyleEditor();
+                ImGui.End();
+            }
+
             ImGui.Begin("Content");
+            ImGui.End();
+            ImGui.Begin("Console");
+            ImGui.TextColored(new(255, 0, 0, 255), "hi");
             ImGui.End();
             ImGui.Begin("Actions");
             ImGui.Button("Play");
             ImGui.SameLine();
             if (ImGui.Button("Settings")) _gameSettingsMenuOpen = true;
+            ImGui.SameLine();
+            if (ImGui.Button("Editor Settings")) _settingsMenuOpen = true;
             ImGui.SameLine();
             if (ImGui.Button("Clear Cache"))
             {

@@ -1,5 +1,0 @@
-{
-  "FriendlyName": "Basic Shader",
-  "VertexShader": "basic_vert.glsl",
-  "FragmentShader": "basic_frag.glsl"
-}

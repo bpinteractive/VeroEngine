@@ -1,5 +1,0 @@
-{
-  "FriendlyName": "ImGui Shader",
-  "VertexShader": "imgui_vert.glsl",
-  "FragmentShader": "imgui_frag.glsl"
-}

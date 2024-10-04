@@ -14,3 +14,4 @@ D:\VeroEngine\VeroEngine.Game\obj\Debug\refint\VeroEngine.Game.dll
 D:\VeroEngine\VeroEngine.Game\obj\Debug\VeroEngine.Game.pdb
 D:\VeroEngine\VeroEngine.Game\obj\Debug\VeroEngine.Game.genruntimeconfig.cache
 D:\VeroEngine\VeroEngine.Game\obj\Debug\ref\VeroEngine.Game.dll
+D:\VeroEngine\VeroEngine.Game\obj\Debug\VeroEngine.Game.sourcelink.json

@@ -5,6 +5,9 @@ namespace VeroEngine.Core.Mathematics;
 
 public class Vector3
 {
+    
+    public static Vector3 Zero = new Vector3(0, 0, 0);
+    public static Vector3 One = new Vector3(1, 1, 1);
     public Vector3() : this(0, 0, 0)
     {
     }
@@ -44,8 +47,9 @@ public class Vector3
 
     public Matrix4 GetRotationMatrix()
     {
-        return Matrix4.CreateRotationX(X) * Matrix4.CreateRotationY(Y) * Matrix4.CreateRotationZ(Z);
+        return Matrix4.CreateRotationZ(Z) * Matrix4.CreateRotationY(Y) * Matrix4.CreateRotationX(X);
     }
+
 
     public Matrix4 GetTranslationMatrix()
     {

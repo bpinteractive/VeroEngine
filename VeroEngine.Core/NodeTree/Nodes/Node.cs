@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using VeroEngine.Core.Mathematics;
+using OpenTK.Mathematics;
+using Vector3 = VeroEngine.Core.Mathematics.Vector3;
 
 namespace VeroEngine.Core.NodeTree.Nodes;
 
@@ -11,10 +12,10 @@ public class Node : IDisposable
     private readonly List<Node> _children;
     private bool _disposed; // Tracks whether the node has been disposed.
 
-    public Vector3 GlobalPosition = new(0, 0, 0);
-    public Vector3 GlobalRotation = new(0, 0, 0);
+    public Vector3 GlobalPosition { get; set; } = new(0, 0, 0);
+    public Vector3 GlobalRotation { get; set; } = new(0, 0, 0);
 
-    public Vector3 GlobalScale = new(1, 1, 1);
+    public Vector3 GlobalScale { get; set; } = new(1, 1, 1);
     public Node Parent;
 
     public Node()
@@ -60,6 +61,12 @@ public class Node : IDisposable
         _children.Add(child);
     }
 
+    public void RemoveChild(Node child)
+    {
+        _children.Remove(child);
+        child.Parent = null;
+    }
+
     public virtual void Create()
     {
     }
@@ -82,9 +89,12 @@ public class Node : IDisposable
 
         if (Parent != null)
         {
-            GlobalPosition = Parent.GlobalPosition + Position;
-            GlobalRotation = Parent.GlobalRotation + Rotation;
+            Matrix4 parentRotationMatrix = Parent.GlobalRotation.GetRotationMatrix();
+            
+            Vector3 rotatedPosition = Position.Transform(parentRotationMatrix);
             GlobalScale = Parent.GlobalScale * Scale;
+            GlobalPosition = Parent.GlobalPosition + rotatedPosition * GlobalScale;
+            GlobalRotation = Parent.GlobalRotation + Rotation;
         }
         else
         {
@@ -93,6 +103,7 @@ public class Node : IDisposable
             GlobalScale = Scale;
         }
     }
+
 
     public virtual Node Duplicate()
     {
@@ -104,19 +115,15 @@ public class Node : IDisposable
         copy.Color = Color;
         copy.Visible = Visible;
 
-        foreach (var child in _children)
+        foreach (var child in _children.ToList())
         {
             var childCopy = child.Duplicate();
+            Parent.RemoveChild(childCopy);
             copy.AddChild(childCopy);
         }
 
         Parent?.AddChild(copy);
         return copy;
-    }
-
-    private void RemoveChild(Node child)
-    {
-        if (_children.Contains(child)) _children.Remove(child);
     }
 
     // Protected Dispose method to handle resource cleanup

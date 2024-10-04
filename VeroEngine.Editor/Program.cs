@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Reflection;
 using ImGuiNET;
+using OpenTK.Platform.Windows;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using ScriptingAssembly;
 using VeroEngine.Core.Generic;
@@ -29,6 +33,9 @@ internal class Program
     private static bool _isRightMousePressed;
     private static Vector2 _lastMousePosition;
 
+    private static string _currentFilesystemDirectory = Path.GetFullPath(Path.Combine("Game", "Content"));
+    private static List<SerialisedFsObject> _serialisedObjects = new();
+
     private static void PopupNewNodeMenu()
     {
         _newNodeOpenMenu = true;
@@ -44,6 +51,10 @@ internal class Program
         {
             Collections.AppConfig.Display.EnableUiDock = true;
             Collections.AppConfig.Display.FullScreen = false;
+            
+            Collections.InEditorHint = true;
+            
+            wnd.SetTitle("Vero Editor: " + Collections.AppConfig.Title);
             
             // Setup imgui styling here
             ImGui.GetStyle().WindowRounding = 4;
@@ -62,7 +73,6 @@ internal class Program
 
         wnd.OnDraw += delta =>
         {
-            wnd.SetTitle("Vero Editor: " + Collections.AppConfig.Title);
             _isRightMousePressed = false;
             // wnd.ReleaseMouse();
             if (Keyboard.KeyPress(Keys.LeftAlt))
@@ -76,7 +86,7 @@ internal class Program
                     if (_lastMousePosition == default) _lastMousePosition = mousePosition;
 
                     var mouseDelta = mousePosition - _lastMousePosition;
-                    Log.Info(mouseDelta.ToString());
+                    // Log.Info(mouseDelta.ToString());
 
                     var camrot = wnd.SceneTree.SceneCamera.GetRotation();
                     camrot.X += (float)Util.Deg2Rad(mouseDelta.X * 0.1f);
@@ -114,6 +124,26 @@ internal class Program
 
         wnd.OnDrawGui += delta =>
         {
+            if (ImGui.BeginMainMenuBar())
+            {
+                if (ImGui.BeginMenu("Scene"))
+                {
+                    if (ImGui.MenuItem("Save", "Ctrl+S"))
+                    {
+                        // save
+                    }
+                    if (ImGui.MenuItem("Save As", "Ctrl+Shift+S"))
+                    {
+                        // save
+                    }
+                    if (ImGui.MenuItem("Open", "Ctrl+O"))
+                    {
+                        // save
+                    }
+                    ImGui.EndMenu();
+                }
+                ImGui.EndMainMenuBar();
+            }
             if (_gameSettingsMenuOpen)
             {
                 ImGui.Begin("App Settings", ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize);
@@ -144,6 +174,18 @@ internal class Program
                     string serial = Collections.AppConfig.Serialize();
                     File.WriteAllText(Path.Combine("Game", "App.json"), serial);
                     Log.Info("Wrote AppConfig");
+                    // Time to restart
+                    if (Environment.ProcessPath != null)
+                    {
+                        var info = new System.Diagnostics.ProcessStartInfo(Environment.ProcessPath);
+                        System.Diagnostics.Process.Start(info );
+                        Environment.Exit(0);
+                    }
+                    else
+                    {
+                        Log.Error("If you can see this then pray to god");
+                    }
+                    
                     _gameSettingsMenuOpen = false;
                 }
                 ImGui.SameLine();
@@ -166,23 +208,82 @@ internal class Program
                 ImGui.End();
             }
 
-            ImGui.Begin("Content");
+            ImGui.Begin("Content Properties");
+            ImGui.End();
+
+            if(ImGui.Begin("Content"))
+            {
+                if (_currentFilesystemDirectory != Path.GetFullPath(Path.Combine("Game", "Content")))
+                {
+                    if (ImGui.Button(".."))
+                    {
+                        _currentFilesystemDirectory = Path.GetFullPath(Path.Combine(_currentFilesystemDirectory, @".."));
+                        Log.Info(_currentFilesystemDirectory);
+                        RefreshFilesystem();
+                    }
+                }
+
+                foreach (var fsObject in _serialisedObjects)
+                {
+                    if (ImGui.Button(fsObject.FileName))
+                    {
+                        if (fsObject.IsFile)
+                        {
+                            switch (fsObject.FileName.Split(".")[1])
+                            {
+                                case "scn":
+                                    break; // TODO: Open
+                                case "obj":
+                                    break;
+                                default:
+                                    OpenWithDefaultProgram(fsObject.Path);
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            Log.Info(_currentFilesystemDirectory);
+                            _currentFilesystemDirectory = fsObject.Path;
+                            RefreshFilesystem();
+                        }
+                    }
+                }
+            }
             ImGui.End();
             ImGui.Begin("Console");
             ImGui.TextColored(new(255, 0, 0, 255), "hi");
             ImGui.End();
             ImGui.Begin("Actions");
-            ImGui.Button("Play");
+            if (Collections.InEditorHint)
+            {
+                if (ImGui.Button("Play"))
+                {
+                    Collections.InEditorHint = false;
+                }
+            }
+            else
+            {
+                if (ImGui.Button("Stop"))
+                {
+                    Collections.InEditorHint = true;
+                }
+                
+            }
             ImGui.SameLine();
             if (ImGui.Button("Settings")) _gameSettingsMenuOpen = true;
             ImGui.SameLine();
-            if (ImGui.Button("Editor Settings")) _settingsMenuOpen = true;
+            if (ImGui.Button("Style Editor")) _settingsMenuOpen = true;
             ImGui.SameLine();
             if (ImGui.Button("Clear Cache"))
             {
                 // Clear pipeline cache for shaders so we can recompile them easily
                 Log.Info("Clearing Pipeline Cache");
                 Directory.Delete(Shader.GetCachePath(), true);
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("Reimport"))
+            {
+                RefreshFilesystem();
             }
             ImGui.End();
             ImGui.Begin("Node Tree");
@@ -213,6 +314,46 @@ internal class Program
         };
 
         wnd.Run();
+    }
+    
+    public static void OpenWithDefaultProgram(string path)
+    {
+        using Process fileopener = new Process();
+
+        fileopener.StartInfo.FileName = "explorer";
+        fileopener.StartInfo.Arguments = "\"" + path + "\"";
+        fileopener.Start();
+    }
+
+    private static void RefreshFilesystem()
+    {
+        _serialisedObjects = GetFilesystemObjectsAt(_currentFilesystemDirectory); // :sob:
+    }
+    
+    private static List<SerialisedFsObject> GetFilesystemObjectsAt(string path)
+    {
+        List<SerialisedFsObject> objects = new List<SerialisedFsObject>();
+        foreach (var file in Directory.GetFiles(path))
+        {
+            objects.Add(new SerialisedFsObject
+            {
+                Path = file,
+                FileName = Path.GetFileName(file),
+                PreviewPath = Path.Combine(Path.Combine(Collections.GetUserDirectory(), "IconCache"), Path.GetFileName(file), ".cached"),
+                IsFile = true
+            });
+        }
+        foreach (var file in Directory.GetDirectories(path))
+        {
+            objects.Add(new SerialisedFsObject
+            {
+                Path = file,
+                FileName = Path.GetFileName(file),
+                PreviewPath = null,
+                IsFile = false
+            });
+        }
+        return objects;
     }
 
     public static void RunProperty(PropertyInfo prop, Node n)
@@ -267,6 +408,12 @@ internal class Program
             foreach (var prop in n.GetType().GetProperties())
                 try
                 {
+                    if (prop.Name is "GlobalPosition" or "GlobalRotation" or "GlobalScale")
+                    {
+                        ImGui.Text(prop.Name + " = " + prop.GetValue(n));
+                        continue;
+                    }
+                    
                     if (prop.GetValue(n) != null)
                         RunProperty(prop, n);
                     else

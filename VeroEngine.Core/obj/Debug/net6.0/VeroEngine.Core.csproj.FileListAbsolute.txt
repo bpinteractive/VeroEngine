@@ -8,3 +8,4 @@ D:\VeroEngine\VeroEngine.Core\obj\Debug\net6.0\VeroEngine.Core.dll
 D:\VeroEngine\VeroEngine.Core\obj\Debug\net6.0\refint\VeroEngine.Core.dll
 D:\VeroEngine\VeroEngine.Core\obj\Debug\net6.0\VeroEngine.Core.pdb
 D:\VeroEngine\VeroEngine.Core\obj\Debug\net6.0\ref\VeroEngine.Core.dll
+D:\VeroEngine\VeroEngine.Core\obj\Debug\net6.0\VeroEngine.Core.sourcelink.json

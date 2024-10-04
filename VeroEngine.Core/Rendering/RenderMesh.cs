@@ -172,7 +172,7 @@ public class RenderMesh : IDisposable
         GL.BindVertexArray(0);
     }
 
-    public void Render(Matrix4 model, Matrix4 view, Matrix4 projection, Vector3 color)
+    public void Render(Matrix4 model, Matrix4 view, Matrix4 projection, Vector3 color, bool wireframe = false)
     {
         if (Material != null)
         {
@@ -185,7 +185,14 @@ public class RenderMesh : IDisposable
                 ref projection);
 
             GL.BindVertexArray(_vao);
-            GL.DrawElements(PrimitiveType.Triangles, _vertexCount, DrawElementsType.UnsignedInt, 0);
+            if (wireframe)
+            {
+                GL.DrawElements(PrimitiveType.Lines, _vertexCount, DrawElementsType.UnsignedInt, 0);
+            }
+            else
+            {
+                GL.DrawElements(PrimitiveType.Triangles, _vertexCount, DrawElementsType.UnsignedInt, 0);
+            }
             GL.BindVertexArray(0);
         }
     }

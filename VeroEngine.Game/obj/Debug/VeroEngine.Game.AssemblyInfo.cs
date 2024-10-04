@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VeroEngine.Game")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6e774fd54a7f6de9288765077d7303f1e6d9225a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bd370cffdbeaaeac55ff94480167eecebd4c859d")]
 [assembly: System.Reflection.AssemblyProductAttribute("VeroEngine.Game")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VeroEngine.Game")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -11,6 +11,7 @@ public class MeshNode : Node
     private string _model;
     private RenderMesh _renderMesh;
     public bool DepthTest { get; set; } = true;
+    public bool Wireframe { get; set; } = false;
 
     public string Model
     {
@@ -50,11 +51,7 @@ public class MeshNode : Node
     {
         Model = "Models/cube.obj";
     }
-
-    public override void Update(double delta, bool editorHint)
-    {
-        base.Update(delta, editorHint);
-    }
+    
 
     public override void Draw()
     {
@@ -67,7 +64,7 @@ public class MeshNode : Node
         var scale = Matrix4.CreateScale(GlobalScale.ToOpenTK());
 
         var model = scale * rotation * translation;
-        _renderMesh?.Render(model, view, proj, Color);
+        _renderMesh?.Render(model, view, proj, Color, Wireframe);
         GL.Enable(EnableCap.DepthTest);
         base.Draw();
     }

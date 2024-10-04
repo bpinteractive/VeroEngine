@@ -123,6 +123,8 @@ public class VeroWindow : GameWindow
         {
             WindowState = WindowState.Maximized;
         }
+        
+        Focus();
     }
 
     protected override void OnResize(ResizeEventArgs e)

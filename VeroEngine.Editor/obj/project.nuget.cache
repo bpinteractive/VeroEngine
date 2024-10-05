@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "E5M0WUH4/C0=",
+  "dgSpecHash": "Y4e0U7MLCvA=",
   "success": true,
   "projectFilePath": "D:\\VeroEngine\\VeroEngine.Editor\\VeroEngine.Editor.csproj",
   "expectedPackageFiles": [
@@ -9,6 +9,7 @@
     "C:\\Users\\newne\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
     "C:\\Users\\newne\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",
     "C:\\Users\\newne\\.nuget\\packages\\microsoft.win32.primitives\\4.3.0\\microsoft.win32.primitives.4.3.0.nupkg.sha512",
+    "C:\\Users\\newne\\.nuget\\packages\\nativefiledialogextendedsharp\\0.1.0\\nativefiledialogextendedsharp.0.1.0.nupkg.sha512",
     "C:\\Users\\newne\\.nuget\\packages\\netstandard.library\\1.6.1\\netstandard.library.1.6.1.nupkg.sha512",
     "C:\\Users\\newne\\.nuget\\packages\\opentk\\4.8.1\\opentk.4.8.1.nupkg.sha512",
     "C:\\Users\\newne\\.nuget\\packages\\opentk.audio.openal\\4.8.1\\opentk.audio.openal.4.8.1.nupkg.sha512",

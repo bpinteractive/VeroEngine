@@ -15,15 +15,21 @@ public class CameraNode : Node
     public override void Create()
     {
         _renderCamera = Collections.RootTree.SceneCamera;
-        if (Collections.InEditorHint)
-        {
-            _cameraMesh = RenderMesh.FromModelFile(Path.Combine("Editor", "camera.obj"));
-        }
+        _cameraMesh = RenderMesh.FromModelFile(Path.Combine("Editor", "camera.obj"));
     }
 
     public override void Draw()
     {
-        if (!Visible) return;
+        if (!Visible)
+        {
+            var proj = Collections.RootTree.SceneCamera.GetProjectionMatrix();
+            var view = Collections.RootTree.SceneCamera.GetViewMatrix();
+            var translation = GlobalPosition.GetTranslationMatrix();
+            var rotation = GlobalRotation.GetRotationMatrix();
+
+            var model = rotation * translation;
+            _cameraMesh.Render(model, view, proj, Color, true);
+        }
         if (Collections.InEditorHint)
         {
             var proj = Collections.RootTree.SceneCamera.GetProjectionMatrix();
@@ -32,8 +38,10 @@ public class CameraNode : Node
             var rotation = GlobalRotation.GetRotationMatrix();
 
             var model = rotation * translation;
-            _cameraMesh.Render(model, view, proj, Color);
+            _cameraMesh.Render(model, view, proj, Color, true);
         }
+
+        if (!Visible) return;
         if (Collections.InEditorHint) return;
         _renderCamera.UpdatePosition(GlobalPosition);
         _renderCamera.SetRotation(GlobalRotation);

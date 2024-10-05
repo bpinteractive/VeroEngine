@@ -6,12 +6,14 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v6.0": {
-      "ScriptingAssembly/1.0.0": {
+      "VeroEngine.Core/1.0.0": {
         "dependencies": {
-          "VeroEngine.Core": "1.0.0"
+          "AssimpNet": "5.0.0-beta1",
+          "ImGui.NET": "1.90.0.1",
+          "OpenTK": "4.8.1"
         },
         "runtime": {
-          "ScriptingAssembly.dll": {}
+          "VeroEngine.Core.dll": {}
         }
       },
       "AssimpNet/5.0.0-beta1": {
@@ -890,24 +892,11 @@
           "System.Threading": "4.3.0",
           "System.Xml.ReaderWriter": "4.3.0"
         }
-      },
-      "VeroEngine.Core/1.0.0": {
-        "dependencies": {
-          "AssimpNet": "5.0.0-beta1",
-          "ImGui.NET": "1.90.0.1",
-          "OpenTK": "4.8.1"
-        },
-        "runtime": {
-          "VeroEngine.Core.dll": {
-            "assemblyVersion": "1.0.0",
-            "fileVersion": "1.0.9044.38207"
-          }
-        }
       }
     }
   },
   "libraries": {
-    "ScriptingAssembly/1.0.0": {
+    "VeroEngine.Core/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1527,11 +1516,6 @@
       "sha512": "sha512-5zJ0XDxAIg8iy+t4aMnQAu0MqVbqyvfoUVl1yDV61xdo3Vth45oA2FoY4pPkxYAH5f8ixpmTqXeEIya95x0aCQ==",
       "path": "system.xml.xdocument/4.3.0",
       "hashPath": "system.xml.xdocument.4.3.0.nupkg.sha512"
-    },
-    "VeroEngine.Core/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
     }
   }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using VeroEngine.Core.Generic;
+using VeroEngine.Core.Mathematics;
 using VeroEngine.Core.NodeTree.Nodes;
 
 namespace VeroEngine.Core.NodeTree;
@@ -18,6 +19,21 @@ public class SceneManager
             RootNode = SerialiseNode(node)
         };
         return tree;
+    }
+
+    public static void ChangeScene(string scene, bool relative = true)
+    {
+        if (relative)
+        {
+            scene = Path.Combine(Path.Combine("Game", "Content"), scene);
+            var deserialised = SceneManager.TreeAsNode(SerialisedTree.Deserialise(File.ReadAllText(scene)), Collections.ScriptingAssembly);
+            Collections.RootTree.SetRoot(deserialised);
+        }
+        else
+        {
+            var deserialised = SceneManager.TreeAsNode(SerialisedTree.Deserialise(File.ReadAllText(scene)), Collections.ScriptingAssembly);
+            Collections.RootTree.SetRoot(deserialised);
+        }
     }
 
     public static SerialisedTree LoadScene(string path)
@@ -71,32 +87,80 @@ public class SceneManager
     }
 
     public static Node DeserialiseNode(SerialisedNode snode, Assembly assembly)
+{
+    var node = SceneTree.CreateNode(snode.ClassName, assembly);
+
+    var properties = node.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
+        .Where(p => p.Name != "Children" && p.Name != "Parent");
+
+    foreach (var property in properties)
     {
-        var node = SceneTree.CreateNode(snode.ClassName, assembly);
-
-        var properties = node.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
-            .Where(p => p.Name != "Children" && p.Name != "Parent");
-
-        foreach (var property in properties)
+        var matchingVariable = snode.Variables.FirstOrDefault(kv => kv.Key == property.Name);
+        if (!matchingVariable.Equals(default(KeyValuePair<string, object>)))
         {
-            var matchingVariable = snode.Variables.FirstOrDefault(kv => kv.Key == property.Name);
-            if (!matchingVariable.Equals(default(KeyValuePair<string, object>)))
-                try
-                {
-                    property.SetValue(node, matchingVariable.Value);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error($"Error setting property {property.Name}: {ex.Message}");
-                }
-        }
+            try
+            {
+                var value = matchingVariable.Value;
 
-        foreach (var childSnode in snode.Children)
-        {
-            var childNode = DeserialiseNode(childSnode, assembly);
-            if (childNode != null) node.AddChild(childNode);
-        }
+                // Handle JsonElement types manually
+                if (value is JsonElement element)
+                {
+                    object convertedValue = null;
 
-        return node;
+                    if (property.PropertyType == typeof(Vector3))
+                    {
+                        convertedValue = DeserializeVector3(element);
+                    }
+                    else if (property.PropertyType == typeof(bool))
+                    {
+                        convertedValue = element.GetBoolean();
+                    }
+                    else if (property.PropertyType == typeof(string))
+                    {
+                        convertedValue = element.GetString();
+                    }
+                    else if (property.PropertyType.IsEnum)
+                    {
+                        convertedValue = Enum.Parse(property.PropertyType, element.GetString());
+                    }
+                    else
+                    {
+                        convertedValue = element;
+                    }
+
+                    if (convertedValue != null)
+                    {
+                        property.SetValue(node, convertedValue);
+                    }
+                }
+                else
+                {
+                    property.SetValue(node, value);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error setting property {property.Name}: {ex.Message}");
+            }
+        }
     }
+
+    foreach (var childSnode in snode.Children)
+    {
+        var childNode = DeserialiseNode(childSnode, assembly);
+        if (childNode != null) node.AddChild(childNode);
+    }
+
+    return node;
+}
+
+    private static Vector3 DeserializeVector3(JsonElement element)
+    {
+        var x = element.GetProperty("X").GetSingle();
+        var y = element.GetProperty("Y").GetSingle();
+        var z = element.GetProperty("Z").GetSingle();
+
+        return new Vector3(x, y, z);
+    }
+
 }

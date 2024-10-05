@@ -38,21 +38,26 @@ public class Camera
 
     public Matrix4 GetViewMatrix()
     {
+        // Calculate the front vector based on yaw (Y-axis), pitch (X-axis)
         var front = new Vector3(
             MathF.Cos(_yaw) * MathF.Cos(_pitch),
             MathF.Sin(_pitch),
             MathF.Sin(_yaw) * MathF.Cos(_pitch)
         ).Normalize();
 
+        // Calculate the right and up vectors using cross product
         var right = Vector3.Cross(front, _up).Normalize();
         var up = Vector3.Cross(right, front).Normalize();
 
+        // Apply roll to right and up vectors
         var rollMatrix = Matrix4.CreateFromAxisAngle(front.ToOpenTK(), _roll);
         right = right.Transform(rollMatrix).Normalize();
         up = up.Transform(rollMatrix).Normalize();
 
+        // Return the LookAt matrix using the updated vectors
         return Matrix4.LookAt(_position.ToOpenTK(), _position.ToOpenTK() + front.ToOpenTK(), up.ToOpenTK());
     }
+
 
     public Vector3 GetFront()
     {
@@ -70,9 +75,8 @@ public class Camera
             MathF.Sin(_pitch),
             MathF.Sin(_yaw) * MathF.Cos(_pitch)
         ).Normalize();
+        
         var right = Vector3.Cross(front, _up).Normalize();
-        var rollMatrix = Matrix4.CreateFromAxisAngle(front.ToOpenTK(), _roll);
-        right = right.Transform(rollMatrix).Normalize();
         return right;
     }
 
@@ -84,17 +88,18 @@ public class Camera
 
     public void SetRotation(float yaw, float pitch, float roll)
     {
-        _yaw = yaw;
-        _pitch = pitch;
-        _roll = roll;
+        _yaw = pitch; // Y-axis
+        _pitch = roll; // Z-axis
+        _roll = yaw; // X-axis
     }
 
     public void SetRotation(Vector3 rot)
     {
-        _yaw = rot.X;
-        _pitch = rot.Y;
-        _roll = rot.Z;
+        _yaw = -rot.Y;   // Yaw on Y-axis
+        _pitch = -rot.Z; // Pitch on X-axis
+        _roll = -rot.X;  // Roll on Z-axis
     }
+
 
     public void UpdatePosition(Vector3 position)
     {
@@ -108,7 +113,7 @@ public class Camera
 
     public Vector3 GetRotation()
     {
-        return new Vector3(_yaw, _pitch, _roll);
+        return new Vector3(-_roll, -_yaw, -_pitch);
     }
 
     public void SetUp(Vector3 up)

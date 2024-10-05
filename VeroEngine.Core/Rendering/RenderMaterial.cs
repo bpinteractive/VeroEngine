@@ -115,9 +115,9 @@ public class RenderMaterial : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (!_disposedValue)
+        if (!_disposedValue && disposing)
         {
-            if (disposing) _shader?.Dispose();
+            _shader?.Dispose();
             _disposedValue = true;
         }
     }

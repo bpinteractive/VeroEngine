@@ -14,6 +14,8 @@ public struct Collections
     public static Version EngineVersion;
     public static SerialisedApp AppConfig;
     public static SceneManager SceneManager;
+    
+    public static Assembly ScriptingAssembly;
 
     public static bool InEditorHint = false;
 

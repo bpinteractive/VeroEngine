@@ -14,12 +14,21 @@ using VeroEngine.Core.Mathematics;
 using VeroEngine.Core.NodeTree;
 using VeroEngine.Core.NodeTree.Nodes;
 using VeroEngine.Core.Rendering;
+
+using NativeFileDialogExtendedSharp;
+
 using Vector3 = VeroEngine.Core.Mathematics.Vector3;
 
 namespace VeroEngine.Editor;
 
 internal class Program
 {
+    private static VeroWindow _wnd;
+    
+    private static Node _currentNode;
+    
+    private static string _currentScene = "";
+    
     private static bool _newNodeOpenMenu;
     private static string _newNodeName = "Node";
     private static string _newNodeClass = "Node";
@@ -27,6 +36,12 @@ internal class Program
 
     private static bool _gameSettingsMenuOpen = false;
     private static bool _settingsMenuOpen = false;
+
+    private static bool _setParentOpen = false;
+    private static int _newParentIndex;
+
+    private static bool _renameNodeOpen = false;
+    private static string _renameNodeName = "Node";
 
     // Camera movement variables
     private static readonly float _cameraSpeed = 5.0f; // Speed of the camera movement
@@ -42,19 +57,35 @@ internal class Program
         _newNodeName = "New";
         _newNodeClass = "Node";
     }
+    
+    private static void PopupReparent(Node n)
+    {
+        _setParentOpen = true;
+        _currentNode = n;
+        _renameNodeOpen = false;
+    }
+    
+    private static void PopupRename(Node n)
+    {
+        _renameNodeOpen = true;
+        _currentNode = n;
+        _renameNodeName = n.Name;
+    }
 
     public static void Main()
     {
-        var wnd = new VeroWindow();
+        _wnd = new VeroWindow();
         MeshNode node;
-        wnd.OnReady += () =>
+        _wnd.OnReady += () =>
         {
             Collections.AppConfig.Display.EnableUiDock = true;
             Collections.AppConfig.Display.FullScreen = false;
             
             Collections.InEditorHint = true;
             
-            wnd.SetTitle("Vero Editor: " + Collections.AppConfig.Title);
+            _wnd.SetTitle("Vero Editor: " + Collections.AppConfig.Title);
+            
+            Collections.ScriptingAssembly = ScriptingInterface.GetAssembly();
             
             // Setup imgui styling here
             ImGui.GetStyle().WindowRounding = 4;
@@ -69,9 +100,10 @@ internal class Program
             ImGui.GetStyle().WindowMenuButtonPosition = ImGuiDir.None;
             ImGui.GetStyle().TabBarBorderSize = 2;
             
+            RefreshFilesystem();
         };
 
-        wnd.OnDraw += delta =>
+        _wnd.OnDraw += delta =>
         {
             _isRightMousePressed = false;
             // wnd.ReleaseMouse();
@@ -88,10 +120,10 @@ internal class Program
                     var mouseDelta = mousePosition - _lastMousePosition;
                     // Log.Info(mouseDelta.ToString());
 
-                    var camrot = wnd.SceneTree.SceneCamera.GetRotation();
-                    camrot.X += (float)Util.Deg2Rad(mouseDelta.X * 0.1f);
-                    camrot.Y -= (float)Util.Deg2Rad(mouseDelta.Y * 0.1f);
-                    wnd.SceneTree.SceneCamera.SetRotation(camrot);
+                    var camrot = _wnd.SceneTree.SceneCamera.GetRotation();
+                    camrot.Y -= (float)Util.Deg2Rad(mouseDelta.X * 0.1f);
+                    camrot.Z += (float)Util.Deg2Rad(mouseDelta.Y * 0.1f);
+                    _wnd.SceneTree.SceneCamera.SetRotation(camrot);
 
                     _lastMousePosition = mousePosition;
                 }
@@ -104,25 +136,29 @@ internal class Program
 
             if (_isRightMousePressed)
             {
-                var camPos = wnd.SceneTree.SceneCamera.GetPosition().ToSystem();
+                var camPos = _wnd.SceneTree.SceneCamera.GetPosition().ToSystem();
 
                 if (Keyboard.KeyPress(Keys.W))
-                    camPos += wnd.SceneTree.SceneCamera.GetFront().ToSystem() * _cameraSpeed * (float)delta;
+                    camPos += _wnd.SceneTree.SceneCamera.GetFront().ToSystem() * _cameraSpeed * (float)delta;
 
                 if (Keyboard.KeyPress(Keys.S))
-                    camPos -= wnd.SceneTree.SceneCamera.GetFront().ToSystem() * _cameraSpeed * (float)delta;
+                    camPos -= _wnd.SceneTree.SceneCamera.GetFront().ToSystem() * _cameraSpeed * (float)delta;
 
                 if (Keyboard.KeyPress(Keys.A))
-                    camPos -= wnd.SceneTree.SceneCamera.GetRight().ToSystem() * _cameraSpeed * (float)delta;
+                    camPos -= _wnd.SceneTree.SceneCamera.GetRight().ToSystem() * _cameraSpeed * (float)delta;
 
                 if (Keyboard.KeyPress(Keys.D))
-                    camPos += wnd.SceneTree.SceneCamera.GetRight().ToSystem() * _cameraSpeed * (float)delta;
+                    camPos += _wnd.SceneTree.SceneCamera.GetRight().ToSystem() * _cameraSpeed * (float)delta;
 
-                wnd.SceneTree.SceneCamera.UpdatePosition(Vector3.FromSystem(camPos));
+                _wnd.SceneTree.SceneCamera.UpdatePosition(Vector3.FromSystem(camPos));
             }
         };
-
-        wnd.OnDrawGui += delta =>
+        _wnd.FileDrop += args =>
+        {
+            // load the file as a scene
+            LoadScene(args.FileNames[0]);
+        };
+        _wnd.OnDrawGui += delta =>
         {
             if (ImGui.BeginMainMenuBar())
             {
@@ -131,24 +167,78 @@ internal class Program
                     if (ImGui.MenuItem("Save", "Ctrl+S"))
                     {
                         // save
+                        if (_currentScene != "")
+                        {
+                            SaveScene(_currentScene);
+                        }
+                        else
+                        {
+                            SaveAsSceneMenu();
+                        }
                     }
                     if (ImGui.MenuItem("Save As", "Ctrl+Shift+S"))
                     {
-                        // save
+                        SaveAsSceneMenu();
                     }
                     if (ImGui.MenuItem("Open", "Ctrl+O"))
                     {
-                        // save
+                        LoadSceneMenu();
                     }
                     ImGui.EndMenu();
                 }
                 ImGui.EndMainMenuBar();
+            }
+
+            if (_renameNodeOpen)
+            {
+                ImGui.Begin("Rename Node", ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize);
+                ImGui.InputText("Name", ref _newNodeName, 128);
+                if (ImGui.Button("Rename"))
+                {
+                    _currentNode.Name = _newNodeName;
+                    _renameNodeOpen = false;
+                }
+                ImGui.SameLine();
+                if (ImGui.Button("Cancel"))
+                { 
+                    _renameNodeOpen = false;
+                }
+                ImGui.End();
+            }
+            if (_setParentOpen)
+            {
+                ImGui.Begin("Set Parent", ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize);
+                ImGui.Text(_currentNode.Name + "->" + _currentNode.Parent.Name);
+                List<string> items = _currentNode.Parent.Children.Select(c => c.Name).ToList();
+                items.Insert(0, _currentNode.Parent.Name);
+                ImGui.Combo("New Parent", ref _newParentIndex, items.ToArray(), items.Count);
+                if (ImGui.Button("Reparent"))
+                {
+                    if (_newParentIndex == items.IndexOf(_currentNode.Parent.Name))
+                    {
+                        _setParentOpen = false;
+                    }
+                    else
+                    {
+                        var p = _currentNode.Parent.GetChild(items[_newParentIndex]);
+                        p.AddChild(_currentNode);
+                        _setParentOpen = false;
+                    }
+                    
+                }
+                ImGui.SameLine();
+                if (ImGui.Button("Cancel"))
+                { 
+                    _setParentOpen = false;
+                }
+                ImGui.End();
             }
             if (_gameSettingsMenuOpen)
             {
                 ImGui.Begin("App Settings", ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize);
                 var title = Collections.AppConfig.Title;
                 var user = Collections.AppConfig.UserData;
+                var initscene = Collections.AppConfig.StartScene;
                 Vector2 res = new(Collections.AppConfig.Resolution.Width,
                     Collections.AppConfig.Resolution.Height);
                 var siz = res.ToSystem();
@@ -158,6 +248,7 @@ internal class Program
                 if (ImGui.InputText("Title", ref title, 256)) Collections.AppConfig.Title = title;
 
                 if (ImGui.InputText("User Folder", ref user, 256)) Collections.AppConfig.UserData = user;
+                if (ImGui.InputText("Initial Scene", ref initscene, 256)) Collections.AppConfig.StartScene = initscene;
                 
                 
                 if (ImGui.DragFloat2("Resolution", ref siz))
@@ -208,6 +299,10 @@ internal class Program
                 ImGui.End();
             }
 
+            ImGui.Begin("Camera Info", ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize);
+            ImGui.Text("Position = " + Collections.RootTree.SceneCamera.GetPosition());
+            ImGui.Text("Rotation = " + Collections.RootTree.SceneCamera.GetRotation());
+            ImGui.End();
             ImGui.Begin("Content Properties");
             ImGui.End();
 
@@ -232,7 +327,8 @@ internal class Program
                             switch (fsObject.FileName.Split(".")[1])
                             {
                                 case "scn":
-                                    break; // TODO: Open
+                                    LoadScene(fsObject.Path);
+                                    break;
                                 case "obj":
                                     break;
                                 default:
@@ -258,7 +354,18 @@ internal class Program
             {
                 if (ImGui.Button("Play"))
                 {
-                    Collections.InEditorHint = false;
+                    // WE NEED TO SAVE AND RELOAD THE SCENE :thumbsup:
+                    if (_currentScene == "")
+                    {
+                        NativeMethods.MessageBox((IntPtr)0, "You have to save your scene to play!", "Vero Editor", 0);
+                    }
+                    else
+                    {
+                        SaveScene(_currentScene);
+                        Collections.InEditorHint = false;
+                        LoadScene(_currentScene);
+                    }
+                    
                 }
             }
             else
@@ -266,6 +373,7 @@ internal class Program
                 if (ImGui.Button("Stop"))
                 {
                     Collections.InEditorHint = true;
+                    LoadScene(_currentScene);
                 }
                 
             }
@@ -278,16 +386,23 @@ internal class Program
             {
                 // Clear pipeline cache for shaders so we can recompile them easily
                 Log.Info("Clearing Pipeline Cache");
-                Directory.Delete(Shader.GetCachePath(), true);
+                try
+                {
+                    Directory.Delete(Shader.GetCachePath(), true);
+                }
+                catch (Exception e)
+                {
+                    // ignored
+                }
             }
             ImGui.SameLine();
-            if (ImGui.Button("Reimport"))
+            if (ImGui.Button("Refresh"))
             {
                 RefreshFilesystem();
             }
             ImGui.End();
             ImGui.Begin("Node Tree");
-            IterateNode(wnd.SceneTree.GetRoot());
+            IterateNode(_wnd.SceneTree.GetRoot());
             ImGui.End();
 
             if (_newNodeOpenMenu)
@@ -313,7 +428,55 @@ internal class Program
             }
         };
 
-        wnd.Run();
+        _wnd.Run();
+    }
+
+    private static void SaveAsSceneMenu()
+    {
+        var f = new List<NfdFilter>();
+        f.Add(new NfdFilter() { Description = "Scene File", Specification = "scn" });
+        var res = Nfd.FileSave(f);
+        // time to save :sob:
+        SaveScene(res.Path);
+    }
+    
+    private static void LoadSceneMenu()
+    {
+        var f = new List<NfdFilter>();
+        f.Add(new NfdFilter() { Description = "Scene File", Specification = "scn" });
+        var res = Nfd.FileOpen(f);
+        // time to save :sob:
+        LoadScene(res.Path);
+    }
+    private static void LoadScene(string fullpath)
+    {
+        try
+        {
+            SceneManager.ChangeScene(fullpath, false);
+            _currentScene = fullpath;
+        }
+        catch (Exception e)
+        {
+            NativeMethods.MessageBox((IntPtr)0, "Failed to open scene " + fullpath + "\n" + e.ToString(), "Vero Editor", 0);
+        }
+
+        // PLEASE WORK
+    }
+    
+    private static void SaveScene(string fullpath)
+    {
+        try
+        {
+            Log.Info(fullpath);
+            var root = Collections.RootTree.GetRoot();
+            var serialisedRoot = SceneManager.NodeAsTree(root);
+            File.WriteAllText(fullpath, serialisedRoot.Serialise());
+            _currentScene = fullpath;
+        }
+        catch (Exception e)
+        {
+            NativeMethods.MessageBox((IntPtr)0, "Failed to save scene " + fullpath + "\n" + e.ToString(), "Vero Editor", 0);
+        }
     }
     
     public static void OpenWithDefaultProgram(string path)
@@ -408,7 +571,7 @@ internal class Program
             foreach (var prop in n.GetType().GetProperties())
                 try
                 {
-                    if (prop.Name is "GlobalPosition" or "GlobalRotation" or "GlobalScale")
+                    if (prop.Name is "GlobalPosition" or "GlobalRotation" or "GlobalScale" or "Name")
                     {
                         ImGui.Text(prop.Name + " = " + prop.GetValue(n));
                         continue;
@@ -425,8 +588,9 @@ internal class Program
 
             if (n.Parent != null)
             {
+                if (ImGui.Button("Reparent")) PopupReparent(n);
+                if (ImGui.Button("Rename")) PopupRename(n);
                 if (ImGui.Button("Duplicate")) n.Duplicate();
-
                 if (ImGui.Button("Destroy")) n.Destroy();
             }
 

@@ -63,6 +63,12 @@ public class SceneTree
         return _root;
     }
 
+    public void SetRoot(Node root)
+    {
+        _root.Destroy();
+        _root = root;
+    }
+
     public void DrawChildren(double deltaTime)
     {
         _root.Update(deltaTime, Collections.InEditorHint);

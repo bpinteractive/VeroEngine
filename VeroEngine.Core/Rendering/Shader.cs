@@ -11,18 +11,15 @@ public class Shader : IDisposable
 {
     private readonly string _name;
     private bool _disposedValue;
+    private int _handle;
+
+    public int Handle => _handle;
 
     private Shader(string name)
     {
         _name = name;
-    }
-
-    public int Handle { get; private set; }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
+        _handle = -1;  // Default invalid handle
+        Log.Info($"Shader {name} Constructed");
     }
 
     public static Shader FromSerialized(SerializedShader serializedShader, string name)
@@ -80,13 +77,14 @@ public class Shader : IDisposable
 
     private void CompileShaders(SerializedShader serializedShader)
     {
-        Handle = GL.CreateProgram();
+        _handle = GL.CreateProgram();
         var vertsource = File.ReadAllText(Path.Combine("Game", "Shaders", "dat", serializedShader.VertexShader));
         var fragsource = File.ReadAllText(Path.Combine("Game", "Shaders", "dat", serializedShader.FragmentShader));
+
         AttachShader(vertsource, ShaderType.VertexShader);
         AttachShader(fragsource, ShaderType.FragmentShader);
 
-        GL.LinkProgram(Handle);
+        GL.LinkProgram(_handle);
         CheckLinkStatus();
 
         SaveToCache();
@@ -97,8 +95,8 @@ public class Shader : IDisposable
         if (string.IsNullOrEmpty(shaderSource)) return;
 
         var shader = CompileShader(shaderSource, shaderType);
-        GL.AttachShader(Handle, shader);
-        GL.DeleteShader(shader);
+        GL.AttachShader(_handle, shader);
+        GL.DeleteShader(shader);  // Safe to delete as it's now part of the program
     }
 
     private int CompileShader(string source, ShaderType type)
@@ -111,6 +109,7 @@ public class Shader : IDisposable
         if (success == 0)
         {
             var infoLog = GL.GetShaderInfoLog(shader);
+            GL.DeleteShader(shader);  // Clean up the shader if it fails
             throw new Exception($"Shader compilation failed ({type}): {infoLog}");
         }
 
@@ -119,10 +118,10 @@ public class Shader : IDisposable
 
     private void CheckLinkStatus()
     {
-        GL.GetProgram(Handle, GetProgramParameterName.LinkStatus, out var linkStatus);
+        GL.GetProgram(_handle, GetProgramParameterName.LinkStatus, out var linkStatus);
         if (linkStatus == 0)
         {
-            var infoLog = GL.GetProgramInfoLog(Handle);
+            var infoLog = GL.GetProgramInfoLog(_handle);
             throw new Exception($"Shader program linking failed: {infoLog}");
         }
     }
@@ -131,19 +130,19 @@ public class Shader : IDisposable
     {
         Log.Info($"Loading pipeline cache from {cachePath}");
         var binary = File.ReadAllBytes(cachePath);
-        Handle = GL.CreateProgram();
+        _handle = GL.CreateProgram();
         var format = (BinaryFormat)GetBinaryFormat(cachePath);
-        GL.ProgramBinary(Handle, format, binary, binary.Length);
+        GL.ProgramBinary(_handle, format, binary, binary.Length);
 
         ValidateCache();
     }
 
     private void ValidateCache()
     {
-        GL.GetProgram(Handle, GetProgramParameterName.LinkStatus, out var success);
+        GL.GetProgram(_handle, GetProgramParameterName.LinkStatus, out var success);
         if (success == 0)
         {
-            var infoLog = GL.GetProgramInfoLog(Handle);
+            var infoLog = GL.GetProgramInfoLog(_handle);
             throw new Exception($"Shader program loading from cache failed: {infoLog}");
         }
     }
@@ -151,9 +150,9 @@ public class Shader : IDisposable
     private void SaveToCache()
     {
         Log.Info($"Writing pipeline cache for {_name}");
-        GL.GetProgram(Handle, GetProgramParameterName.ProgramBinaryLength, out var binaryLength);
+        GL.GetProgram(_handle, GetProgramParameterName.ProgramBinaryLength, out var binaryLength);
         var binary = new byte[binaryLength];
-        GL.GetProgramBinary(Handle, binaryLength, out _, out var format, binary);
+        GL.GetProgramBinary(_handle, binaryLength, out _, out var format, binary);
 
         var cachePath = GetCachePath(_name);
         Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
@@ -171,50 +170,48 @@ public class Shader : IDisposable
 
     public int GetUniformLocation(string name)
     {
-        return GL.GetUniformLocation(Handle, name);
+        return GL.GetUniformLocation(_handle, name);
     }
 
     public void SetUniform(string name, float value)
     {
-        var location = GL.GetUniformLocation(Handle, name);
+        var location = GetUniformLocation(name);
         if (location != -1) GL.Uniform1(location, value);
     }
 
     public void SetUniform(string name, int value)
     {
-        var location = GL.GetUniformLocation(Handle, name);
+        var location = GetUniformLocation(name);
         if (location != -1) GL.Uniform1(location, value);
     }
 
     public void SetUniform(string name, Vector3 vector)
     {
-        var location = GL.GetUniformLocation(Handle, name);
+        var location = GetUniformLocation(name);
         if (location != -1) GL.Uniform3(location, vector.X, vector.Y, vector.Z);
     }
 
     public void SetUniform(string name, Matrix4 matrix)
     {
-        var location = GL.GetUniformLocation(Handle, name);
+        var location = GetUniformLocation(name);
         if (location != -1) GL.UniformMatrix4(location, false, ref matrix);
     }
 
     public void Use()
     {
-        GL.UseProgram(Handle);
+        GL.UseProgram(_handle);
     }
 
     protected virtual void Dispose(bool disposing)
     {
-        if (!_disposedValue)
+        Log.Info($"Shader {_name} Disposed");
+        if (!_disposedValue && disposing)
         {
-            if (disposing)
+            if (_handle != -1)  // Ensure handle is valid before deleting
             {
-                // Cleanup managed resources if any
+                GL.DeleteProgram(_handle);
+                _handle = -1;  // Invalidate handle after deletion
             }
-
-            if (Handle != -1 && Handle != 0)
-                if (GL.IsProgram(Handle))
-                    GL.DeleteProgram(Handle);
             _disposedValue = true;
         }
     }
@@ -222,5 +219,11 @@ public class Shader : IDisposable
     ~Shader()
     {
         Dispose(false);
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

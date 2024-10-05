@@ -1,7 +1,7 @@
 {
-  "Title": "VeroGame",
+  "Title": "VeroTestGame",
   "Version": "1.0.0",
-  "StartScene": "Scenes/Test.Asset",
+  "StartScene": "Scenes/main.scn",
   "UserData": "VeroTest",
   "Resolution": {
     "Width": 1920,

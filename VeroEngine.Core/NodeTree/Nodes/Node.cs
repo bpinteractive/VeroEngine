@@ -56,7 +56,8 @@ public class Node : IDisposable
         var count = 1;
 
         while (_children.Any(node => node.Name == child.Name)) child.Name = $"{baseName}_{count++}";
-
+        
+        child.Parent?.RemoveChild(child);
         child.Parent = this;
         _children.Add(child);
     }
@@ -91,9 +92,9 @@ public class Node : IDisposable
         {
             Matrix4 parentRotationMatrix = Parent.GlobalRotation.GetRotationMatrix();
             
-            Vector3 rotatedPosition = Position.Transform(parentRotationMatrix);
+            Vector3 rotatedPosition = (Position * Parent.GlobalScale).Transform(parentRotationMatrix);
             GlobalScale = Parent.GlobalScale * Scale;
-            GlobalPosition = Parent.GlobalPosition + rotatedPosition * GlobalScale;
+            GlobalPosition = Parent.GlobalPosition + rotatedPosition;
             GlobalRotation = Parent.GlobalRotation + Rotation;
         }
         else
@@ -133,15 +134,13 @@ public class Node : IDisposable
         {
             if (disposing)
             {
-                // Dispose managed resources here
                 if (Parent != null) Parent.RemoveChild(this);
 
                 foreach (var child in new List<Node>(_children)) child.Dispose();
 
                 _children.Clear();
             }
-
-            // Cleanup unmanaged resources here (if any)
+            
 
             _disposed = true;
         }

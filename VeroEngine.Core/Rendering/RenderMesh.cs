@@ -193,16 +193,16 @@ public class RenderMesh : IDisposable
             {
                 GL.DrawElements(PrimitiveType.Triangles, _vertexCount, DrawElementsType.UnsignedInt, 0);
             }
+
             GL.BindVertexArray(0);
         }
     }
 
     protected virtual void Dispose(bool disposing)
     {
-        if (!disposed)
+        if (!disposed && disposing)
         {
-            if (disposing) Material?.Dispose();
-
+            Material?.Dispose();
             if (_vao != 0)
             {
                 GL.DeleteVertexArray(_vao);
@@ -220,9 +220,9 @@ public class RenderMesh : IDisposable
                 GL.DeleteBuffer(_ebo);
                 _ebo = 0;
             }
-
-            disposed = true;
         }
+
+        disposed = true;
     }
 
     ~RenderMesh()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 using ImGuiNET;
 using OpenTK.Graphics.OpenGL4;
@@ -98,7 +99,6 @@ public class VeroWindow : GameWindow
                ex is StackOverflowException ||
                ex is ThreadAbortException;
     }
-
     protected override void OnLoad()
     {
         base.OnLoad();
@@ -123,7 +123,6 @@ public class VeroWindow : GameWindow
         {
             WindowState = WindowState.Maximized;
         }
-        
         Focus();
     }
 

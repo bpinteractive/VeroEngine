@@ -237,6 +237,10 @@
               "target": "Package",
               "version": "[1.90.0.1, )"
             },
+            "NativeFileDialogExtendedSharp": {
+              "target": "Package",
+              "version": "[0.1.0, )"
+            },
             "OpenTK": {
               "target": "Package",
               "version": "[4.8.1, )"

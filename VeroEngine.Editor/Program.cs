@@ -19,6 +19,7 @@ using NativeFileDialogExtendedSharp;
 using OpenTK.Mathematics;
 using Vector2 = VeroEngine.Core.Mathematics.Vector2;
 using Vector3 = VeroEngine.Core.Mathematics.Vector3;
+using Vector4 = System.Numerics.Vector4;
 
 namespace VeroEngine.Editor;
 
@@ -32,7 +33,7 @@ internal class Program
     
     private static bool _newNodeOpenMenu;
     private static string _newNodeName = "Node";
-    private static string _newNodeClass = "Node";
+    private static int _newNodeClass = 0;
     private static Node _newNodeParent;
 
     private static bool _gameSettingsMenuOpen = false;
@@ -43,6 +44,8 @@ internal class Program
 
     private static bool _renameNodeOpen = false;
     private static string _renameNodeName = "Node";
+
+    private static List<string> _nodeClasses = new();
 
     // Camera movement variables
     private static readonly float _cameraSpeed = 5.0f; // Speed of the camera movement
@@ -56,7 +59,7 @@ internal class Program
     {
         _newNodeOpenMenu = true;
         _newNodeName = "New";
-        _newNodeClass = "Node";
+        _newNodeClass = 0;
     }
     
     private static void PopupReparent(Node n)
@@ -73,6 +76,21 @@ internal class Program
         _renameNodeName = n.Name;
     }
 
+    public static void RefreshNodes()
+    {
+        _nodeClasses.Clear();
+        // ADD BUILTIN NODES HERE PLEASE
+        _nodeClasses.Add("Node");
+        _nodeClasses.Add("MeshNode");
+        _nodeClasses.Add("CameraNode");
+        _nodeClasses.Add("RotateNode");
+        
+        var tee = GetTypesInNamespace(ScriptingInterface.GetAssembly(), "ScriptingAssembly.Nodes").ToList();
+        foreach (var te in tee)
+        {
+            _nodeClasses.Add(te.Name);
+        }
+    }
     public static void Main()
     {
         _wnd = new VeroWindow();
@@ -102,6 +120,7 @@ internal class Program
             ImGui.GetStyle().TabBarBorderSize = 2;
             
             RefreshFilesystem();
+            RefreshNodes();
         };
 
         _wnd.OnDraw += delta =>
@@ -356,7 +375,23 @@ internal class Program
             }
             ImGui.End();
             ImGui.Begin("Console");
-            ImGui.TextColored(new(255, 0, 0, 255), "hi");
+            foreach (var entry in Log.LogsSent.ToList())
+            {
+                switch (entry.Level.ToLower())
+                {
+                    case "warn":
+                        ImGui.TextColored(new Vector4(255, 255, 0, 255), entry.Message);
+                        break;
+                    case "error":
+                        ImGui.TextColored(new Vector4(255, 0, 0, 255), entry.Message);
+                        break;
+                    case "info":
+                        ImGui.TextColored(new Vector4(0, 255, 255, 255), entry.Message);
+                        break;
+                }
+            }
+            if (ImGui.GetScrollY() >= ImGui.GetScrollMaxY())
+                ImGui.SetScrollHereY(1.0f);
             ImGui.End();
             ImGui.Begin("Actions", ImGuiWindowFlags.AlwaysAutoResize);
             if (Collections.InEditorHint)
@@ -414,17 +449,17 @@ internal class Program
             IterateNode(_wnd.SceneTree.GetRoot());
             ImGui.End();
 
+            #region New Node
             if (_newNodeOpenMenu)
             {
                 ImGui.Begin("New Node", ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize);
 
-                ImGui.Text("New Node");
-
                 ImGui.InputText("Name", ref _newNodeName, 250);
-                ImGui.InputText("Class", ref _newNodeClass, 250);
+
+                ImGui.Combo("Class", ref _newNodeClass, _nodeClasses.ToArray(), _nodeClasses.Count);
                 if (ImGui.Button("Create"))
                 {
-                    var inst = SceneTree.CreateNode(_newNodeClass, ScriptingInterface.GetAssembly());
+                    var inst = SceneTree.CreateNode(_nodeClasses[_newNodeClass], ScriptingInterface.GetAssembly());
                     inst.Name = _newNodeName;
                     _newNodeParent.AddChild(inst);
                     _newNodeOpenMenu = false;
@@ -435,9 +470,18 @@ internal class Program
 
                 ImGui.End();
             }
+            #endregion
         };
 
         _wnd.Run();
+    }
+    
+    private static Type[] GetTypesInNamespace(Assembly assembly, string nameSpace)
+    {
+        return 
+            assembly.GetTypes()
+                .Where(t => String.Equals(t.Namespace, nameSpace, StringComparison.Ordinal))
+                .ToArray();
     }
 
     private static void SaveAsSceneMenu()

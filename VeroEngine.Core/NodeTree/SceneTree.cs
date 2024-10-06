@@ -41,7 +41,7 @@ public class SceneTree
     public static Node CreateNode(string nodeType, Assembly customAssembly)
     {
         var type = GetTypeFromAssembly(typeof(VeroWindow).Assembly, "VeroEngine.Core.NodeTree.Nodes." + nodeType)
-                   ?? GetTypeFromAssembly(customAssembly, "ScriptingAssembly." + nodeType);
+                   ?? GetTypeFromAssembly(customAssembly, "ScriptingAssembly.Nodes." + nodeType);
 
         if (type != null && Activator.CreateInstance(type) is Node instance)
         {

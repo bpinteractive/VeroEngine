@@ -1,6 +1,6 @@
 using VeroEngine.Core.NodeTree.Nodes;
 
-namespace ScriptingAssembly;
+namespace ScriptingAssembly.Nodes;
 
 public class TestNode : Node
 {

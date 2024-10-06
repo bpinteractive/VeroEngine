@@ -119,6 +119,10 @@ public class SceneManager
                     {
                         convertedValue = element.GetString();
                     }
+                    else if (property.PropertyType == typeof(float))
+                    {
+                        convertedValue = element.GetSingle();
+                    }
                     else if (property.PropertyType.IsEnum)
                     {
                         convertedValue = Enum.Parse(property.PropertyType, element.GetString());

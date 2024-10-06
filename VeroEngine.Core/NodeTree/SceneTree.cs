@@ -26,7 +26,7 @@ public class SceneTree
         _root = new Node();
         _root.Name = "root";
         SceneCamera = new Camera(
-            new Vector3(-2f, 0, -1),
+            new Vector3(0, 0, 0),
             0,
             0,
             0,

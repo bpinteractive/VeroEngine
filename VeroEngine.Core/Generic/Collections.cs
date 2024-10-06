@@ -18,6 +18,7 @@ public struct Collections
     public static Assembly ScriptingAssembly;
 
     public static bool InEditorHint = false;
+    public static bool IsCameraStolen = false;
 
     public static SceneTree RootTree;
 

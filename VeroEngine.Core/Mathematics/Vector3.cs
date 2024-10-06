@@ -47,7 +47,7 @@ public class Vector3
 
     public Matrix4 GetRotationMatrix()
     {
-        return Matrix4.CreateRotationZ(Z) * Matrix4.CreateRotationY(Y) * Matrix4.CreateRotationX(X);
+        return Matrix4.CreateFromQuaternion(Util.RadiansToQuaternion(this));
     }
 
 

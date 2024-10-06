@@ -16,7 +16,8 @@ using VeroEngine.Core.NodeTree.Nodes;
 using VeroEngine.Core.Rendering;
 
 using NativeFileDialogExtendedSharp;
-
+using OpenTK.Mathematics;
+using Vector2 = VeroEngine.Core.Mathematics.Vector2;
 using Vector3 = VeroEngine.Core.Mathematics.Vector3;
 
 namespace VeroEngine.Editor;
@@ -132,6 +133,14 @@ internal class Program
                     _isRightMousePressed = false;
                     _lastMousePosition = default;
                 }
+            }
+
+            if (!Collections.IsCameraStolen)
+            {
+                _wnd.SceneTree.SceneCamera.SetFieldOfView((float)Util.Deg2Rad(90));
+                var r = _wnd.SceneTree.SceneCamera.GetRotation();
+                r.X = 0.0f;
+                _wnd.SceneTree.SceneCamera.SetRotation(r);
             }
 
             if (_isRightMousePressed)
@@ -349,7 +358,7 @@ internal class Program
             ImGui.Begin("Console");
             ImGui.TextColored(new(255, 0, 0, 255), "hi");
             ImGui.End();
-            ImGui.Begin("Actions");
+            ImGui.Begin("Actions", ImGuiWindowFlags.AlwaysAutoResize);
             if (Collections.InEditorHint)
             {
                 if (ImGui.Button("Play"))
@@ -534,13 +543,13 @@ internal class Program
                 }
 
                 var sysvec = ((Vector3)val).ToSystem();
-                ImGui.DragFloat3(prop.Name, ref sysvec, 0.01f);
+                ImGui.DragFloat3(prop.Name, ref sysvec, 0.1f);
                 prop.SetValue(n, Vector3.FromSystem(sysvec));
                 // n.Position = Vector3.FromSystem(sysvec);
                 break;
-            case "float":
+            case "single":
                 var floate = (float)val;
-                ImGui.DragFloat(prop.Name, ref floate, 0.01f);
+                ImGui.DragFloat(prop.Name, ref floate, 0.1f);
                 prop.SetValue(n, floate);
                 // n.Position = Vector3.FromSystem(sysvec);
                 break;

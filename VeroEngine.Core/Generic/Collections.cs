@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
+using VeroEngine.Core.Mathematics;
 using VeroEngine.Core.NodeTree;
 
 // Just telling the compiler to automatically fill in the build number 1.0.X
@@ -11,64 +12,66 @@ namespace VeroEngine.Core.Generic;
 
 public struct Collections
 {
-    public static Version EngineVersion;
-    public static SerialisedApp AppConfig;
-    public static SceneManager SceneManager;
-    
-    public static Assembly ScriptingAssembly;
+	public static Version EngineVersion;
+	public static SerialisedApp AppConfig;
+	public static SceneManager SceneManager;
 
-    public static bool InEditorHint = false;
-    public static bool IsCameraStolen = false;
+	public static Assembly ScriptingAssembly;
 
-    public static SceneTree RootTree;
+	public static bool InEditorHint = false;
+	public static bool IsCameraStolen = false;
 
-    public static void LoadAppConfig()
-    {
-        Log.Info("Loading app config...");
+	public static SceneTree RootTree;
 
-        var filePath = Path.Combine("Game", "App.json");
+	public static Vector2 ViewportSize;
 
-        // Check if the config file exists
-        if (!File.Exists(filePath))
-        {
-            Log.Error($"App config file not found: {filePath}");
-            return; // Early exit if the file doesn't exist
-        }
+	public static void LoadAppConfig()
+	{
+		Log.Info("Loading app config...");
 
-        try
-        {
-            var jsonContent = File.ReadAllText(filePath);
-            AppConfig = SerialisedApp.Deserialize(jsonContent);
+		var filePath = Path.Combine("Game", "App.json");
 
-            Log.Info("App config loaded successfully.");
-        }
-        catch (JsonException jsonEx)
-        {
-            Log.Error($"Error deserializing app config: {jsonEx.Message}");
-        }
-        catch (IOException ioEx)
-        {
-            Log.Error($"I/O error while loading app config: {ioEx.Message}");
-        }
-        catch (Exception ex)
-        {
-            Log.Error($"Unexpected error occurred while loading app config: {ex.Message}");
-        }
-    }
+		// Check if the config file exists
+		if (!File.Exists(filePath))
+		{
+			Log.Error($"App config file not found: {filePath}");
+			return; // Early exit if the file doesn't exist
+		}
 
-    public static void GetVersionsFromEngine()
-    {
-        var assembly = typeof(Collections).Assembly;
-        EngineVersion = assembly.GetName().Version;
-    }
+		try
+		{
+			var jsonContent = File.ReadAllText(filePath);
+			AppConfig = SerialisedApp.Deserialize(jsonContent);
 
-    public static string GetUserDirectory() // C:/Users/{USER}/AppData/Roaming/{DATADIR}/
-    {
-        var userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+			Log.Info("App config loaded successfully.");
+		}
+		catch (JsonException jsonEx)
+		{
+			Log.Error($"Error deserializing app config: {jsonEx.Message}");
+		}
+		catch (IOException ioEx)
+		{
+			Log.Error($"I/O error while loading app config: {ioEx.Message}");
+		}
+		catch (Exception ex)
+		{
+			Log.Error($"Unexpected error occurred while loading app config: {ex.Message}");
+		}
+	}
 
-        var fullPath = Path.Combine(userProfilePath, "AppData", "Roaming", AppConfig.UserData);
-        if (!Directory.Exists(fullPath)) Directory.CreateDirectory(fullPath);
+	public static void GetVersionsFromEngine()
+	{
+		var assembly = typeof(Collections).Assembly;
+		EngineVersion = assembly.GetName().Version;
+	}
 
-        return fullPath + Path.DirectorySeparatorChar; // Add trailing slash
-    }
+	public static string GetUserDirectory() // C:/Users/{USER}/AppData/Roaming/{DATADIR}/
+	{
+		var userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+		var fullPath = Path.Combine(userProfilePath, "AppData", "Roaming", AppConfig.UserData);
+		if (!Directory.Exists(fullPath)) Directory.CreateDirectory(fullPath);
+
+		return fullPath + Path.DirectorySeparatorChar; // Add trailing slash
+	}
 }

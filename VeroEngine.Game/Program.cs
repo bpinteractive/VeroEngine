@@ -7,16 +7,16 @@ namespace VeroEngine.Game;
 
 internal abstract class Program
 {
-    public static void Main()
-    {
-        var wnd = new VeroWindow();
-        wnd.OnReady += () =>
-        {
-            wnd.SetTitle(Collections.AppConfig.Title);
-            Collections.ScriptingAssembly = ScriptingInterface.GetAssembly();
-            SceneManager.ChangeScene(Collections.AppConfig.StartScene);
-            Collections.InEditorHint = false;
-        };
-        wnd.Run();
-    }
+	public static void Main()
+	{
+		var wnd = new VeroWindow();
+		wnd.OnReady += () =>
+		{
+			wnd.SetTitle(Collections.AppConfig.Title);
+			Collections.ScriptingAssembly = ScriptingInterface.GetAssembly();
+			SceneManager.ChangeScene(Collections.AppConfig.StartScene);
+			Collections.InEditorHint = false;
+		};
+		wnd.Run();
+	}
 }

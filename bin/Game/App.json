@@ -10,7 +10,7 @@
   "Display": {
     "EnableUiDock": true,
     "FullScreen": false,
-    "VSync": true,
+    "VSync": false,
     "FpsLimit": 300,
     "Brightness": 1
   }

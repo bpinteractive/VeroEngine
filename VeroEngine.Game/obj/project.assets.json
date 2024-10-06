@@ -39,6 +39,35 @@
           }
         }
       },
+      "BepuPhysics/2.4.0": {
+        "type": "package",
+        "dependencies": {
+          "BepuUtilities": "2.4.0"
+        },
+        "compile": {
+          "lib/net6.0/BepuPhysics.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/BepuPhysics.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "BepuUtilities/2.4.0": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/BepuUtilities.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/BepuUtilities.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "ImGui.NET/1.90.0.1": {
         "type": "package",
         "dependencies": {
@@ -1585,6 +1614,7 @@
         "framework": ".NETCoreApp,Version=v6.0",
         "dependencies": {
           "AssimpNet": "5.0.0-beta1",
+          "BepuPhysics": "2.4.0",
           "ImGui.NET": "1.90.0.1",
           "OpenTK": "4.8.1"
         },
@@ -1622,6 +1652,34 @@
         "runtimes/osx-x64/native/libassimp.dylib",
         "runtimes/win-x64/native/assimp.dll",
         "runtimes/win-x86/native/assimp.dll"
+      ]
+    },
+    "BepuPhysics/2.4.0": {
+      "sha512": "Ck/BJgSQrBqYrj0T9jGljDdHNILBP5kTPTylc7N/hCzR1XJJc7p6ORzwtjTfjgoYkkdajvLHxEQv6BRC8kaysQ==",
+      "type": "package",
+      "path": "bepuphysics/2.4.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "bepuphysics.2.4.0.nupkg.sha512",
+        "bepuphysics.nuspec",
+        "bepuphysicslogo256.png",
+        "lib/net6.0/BepuPhysics.dll",
+        "lib/net6.0/BepuPhysics.xml"
+      ]
+    },
+    "BepuUtilities/2.4.0": {
+      "sha512": "KNMxkzKLHAvV7jRtErxs3rPv71fHToqo/WN96HlT6iomWuwL97tohEbt0B1WA8A6sO5t6PP+qF08d4T9A8k2uA==",
+      "type": "package",
+      "path": "bepuutilities/2.4.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "bepuphysicslogo256.png",
+        "bepuutilities.2.4.0.nupkg.sha512",
+        "bepuutilities.nuspec",
+        "lib/net6.0/BepuUtilities.dll",
+        "lib/net6.0/BepuUtilities.xml"
       ]
     },
     "ImGui.NET/1.90.0.1": {

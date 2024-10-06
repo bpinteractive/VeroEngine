@@ -4,4 +4,5 @@ namespace ScriptingAssembly.Nodes;
 
 public class TestNode : Node
 {
+	public string ThisIsANodeLoadedFromTheScriptingAssembly { get; set; }
 }

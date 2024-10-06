@@ -9,121 +9,121 @@ namespace VeroEngine.Core.Rendering;
 
 public class RenderMaterial : IDisposable
 {
-    private bool _disposedValue;
-    private SerialisedMaterial _serialisedMaterial;
-    private Shader _shader;
+	private bool _disposedValue;
+	private SerialisedMaterial _serialisedMaterial;
+	private Shader _shader;
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
 
-    public static RenderMaterial FromSerialised(SerialisedMaterial material)
-    {
-        var inst = new RenderMaterial();
-        inst._serialisedMaterial = material;
-        inst._shader = Shader.Load(material.Shader); // Directly use the shader name
+	public static RenderMaterial FromSerialised(SerialisedMaterial material)
+	{
+		var inst = new RenderMaterial();
+		inst._serialisedMaterial = material;
+		inst._shader = Shader.Load(material.Shader); // Directly use the shader name
 
-        foreach (var uniform in material.Uniforms)
-            switch (uniform.Value.Type.ToLower()) // Ensure case-insensitivity
-            {
-                case "int":
-                    inst.SetUniformSafe(uniform.Key, uniform.Value.Value.GetInt32());
-                    break;
-                case "float":
-                    inst.SetUniformSafe(uniform.Key, uniform.Value.Value.GetSingle());
-                    break;
-                case "tex":
-                    var texturePath = uniform.Value.Value.GetString(); // Ensure it is a string
-                    var textureId = LoadTexture(texturePath);
-                    inst.SetUniformSafe(uniform.Key, textureId);
-                    break;
-                default:
-                    Debug.WriteLine($"Warning: Unsupported uniform type '{uniform.Value.Type}' for '{uniform.Key}'");
-                    break;
-            }
+		foreach (var uniform in material.Uniforms)
+			switch (uniform.Value.Type.ToLower()) // Ensure case-insensitivity
+			{
+				case "int":
+					inst.SetUniformSafe(uniform.Key, uniform.Value.Value.GetInt32());
+					break;
+				case "float":
+					inst.SetUniformSafe(uniform.Key, uniform.Value.Value.GetSingle());
+					break;
+				case "tex":
+					var texturePath = uniform.Value.Value.GetString(); // Ensure it is a string
+					var textureId = LoadTexture(texturePath);
+					inst.SetUniformSafe(uniform.Key, textureId);
+					break;
+				default:
+					Debug.WriteLine($"Warning: Unsupported uniform type '{uniform.Value.Type}' for '{uniform.Key}'");
+					break;
+			}
 
-        return inst;
-    }
+		return inst;
+	}
 
-    public static RenderMaterial Load(string name)
-    {
-        Log.Info($"Loading material {name}");
-        var filePath = Path.Combine("Game", "Content", $"{name}.json");
+	public static RenderMaterial Load(string name)
+	{
+		Log.Info($"Loading material {name}");
+		var filePath = Path.Combine("Game", "Content", $"{name}.json");
 
-        try
-        {
-            var json = File.ReadAllText(filePath);
-            var serialisedMaterial = SerialisedMaterial.Deserialize(json);
-            return FromSerialised(serialisedMaterial);
-        }
-        catch (FileNotFoundException ex)
-        {
-            return FromSerialised(new SerialisedMaterial
-                { Shader = "VeroEngine.Basic", Uniforms = new Dictionary<string, SerialisedUniform>() }); // fallback
-        }
-    }
+		try
+		{
+			var json = File.ReadAllText(filePath);
+			var serialisedMaterial = SerialisedMaterial.Deserialize(json);
+			return FromSerialised(serialisedMaterial);
+		}
+		catch (FileNotFoundException ex)
+		{
+			return FromSerialised(new SerialisedMaterial
+				{ Shader = "VeroEngine.Basic", Uniforms = new Dictionary<string, SerialisedUniform>() }); // fallback
+		}
+	}
 
-    public void Use()
-    {
-        if (_shader != null)
-            _shader.Use();
-        else
-            Log.Error("Shader is null, cannot use material.");
-    }
+	public void Use()
+	{
+		if (_shader != null)
+			_shader.Use();
+		else
+			Log.Error("Shader is null, cannot use material.");
+	}
 
-    public Shader GetShader()
-    {
-        return _shader;
-    }
+	public Shader GetShader()
+	{
+		return _shader;
+	}
 
-    private static int LoadTexture(string path)
-    {
-        // Implement caching mechanism to avoid reloading the same texture multiple times
-        // Placeholder implementation for texture loading
-        return 0; // Replace with actual texture ID after loading the texture
-    }
+	private static int LoadTexture(string path)
+	{
+		// Implement caching mechanism to avoid reloading the same texture multiple times
+		// Placeholder implementation for texture loading
+		return 0; // Replace with actual texture ID after loading the texture
+	}
 
-    private void SetUniformSafe(string name, int value)
-    {
-        var location = _shader.GetUniformLocation(name);
-        if (location != -1)
-            _shader.SetUniform(name, value);
-        else
-            Debug.WriteLine($"Warning: Uniform '{name}' not found in shader.");
-    }
+	private void SetUniformSafe(string name, int value)
+	{
+		var location = _shader.GetUniformLocation(name);
+		if (location != -1)
+			_shader.SetUniform(name, value);
+		else
+			Debug.WriteLine($"Warning: Uniform '{name}' not found in shader.");
+	}
 
-    private void SetUniformSafe(string name, float value)
-    {
-        var location = _shader.GetUniformLocation(name);
-        if (location != -1)
-            _shader.SetUniform(name, value);
-        else
-            Debug.WriteLine($"Warning: Uniform '{name}' not found in shader.");
-    }
+	private void SetUniformSafe(string name, float value)
+	{
+		var location = _shader.GetUniformLocation(name);
+		if (location != -1)
+			_shader.SetUniform(name, value);
+		else
+			Debug.WriteLine($"Warning: Uniform '{name}' not found in shader.");
+	}
 
-    public override string ToString()
-    {
-        var uniformInfo = string.Join(Environment.NewLine, _serialisedMaterial.Uniforms.Select(u =>
-            $"{u.Key}: Type = {u.Value.Type}, Value = {u.Value.Value}"));
+	public override string ToString()
+	{
+		var uniformInfo = string.Join(Environment.NewLine, _serialisedMaterial.Uniforms.Select(u =>
+			$"{u.Key}: Type = {u.Value.Type}, Value = {u.Value.Value}"));
 
-        return $"RenderMaterial: {Environment.NewLine}" +
-               $"Shader: {_serialisedMaterial.Shader}{Environment.NewLine}" +
-               $"Uniforms: {Environment.NewLine}{uniformInfo}";
-    }
+		return $"RenderMaterial: {Environment.NewLine}" +
+		       $"Shader: {_serialisedMaterial.Shader}{Environment.NewLine}" +
+		       $"Uniforms: {Environment.NewLine}{uniformInfo}";
+	}
 
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_disposedValue && disposing)
-        {
-            _shader?.Dispose();
-            _disposedValue = true;
-        }
-    }
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!_disposedValue && disposing)
+		{
+			_shader?.Dispose();
+			_disposedValue = true;
+		}
+	}
 
-    ~RenderMaterial()
-    {
-        Dispose(false);
-    }
+	~RenderMaterial()
+	{
+		Dispose(false);
+	}
 }

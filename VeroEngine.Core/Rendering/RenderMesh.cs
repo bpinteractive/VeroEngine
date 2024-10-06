@@ -14,219 +14,260 @@ namespace VeroEngine.Core.Rendering;
 
 public class RenderMesh : IDisposable
 {
-    private int _ebo;
-    private int _vao;
-    private int _vbo;
-    private int _vertexCount;
-    private bool disposed;
-    public RenderMaterial Material;
+	public readonly List<Vector3> Vertices = new();
+	private bool _boundingBoxDirty = true;
 
-    public RenderMesh(float[] data, int[] indices, RenderMaterial mat)
-    {
-        Material = mat;
-        InitializeBuffers(data, indices);
-    }
+	private AABB _cachedBoundingBox;
+	private int _ebo;
+	private int _vao;
+	private int _vbo;
+	private int _vertexCount;
+	private bool disposed;
+	public RenderMaterial Material;
 
-    public RenderMesh()
-    {
-    }
+	public RenderMesh(float[] data, int[] indices, RenderMaterial mat, List<Vector3> vertices)
+	{
+		Material = mat;
+		InitializeBuffers(data, indices);
+		Vertices = vertices;
+	}
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+	public RenderMesh()
+	{
+	}
 
-    public static RenderMesh FromModelFile(string file)
-    {
-        try
-        {
-            var fullpath = Path.Combine("Game", "Content", file);
-            var importer = new AssimpContext();
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
 
-            var scene = importer.ImportFile(fullpath, PostProcessSteps.Triangulate
-                                                      | PostProcessSteps.JoinIdenticalVertices
-                                                      | PostProcessSteps.FlipUVs |
-                                                      PostProcessSteps.TransformUVCoords);
+	// Cached bounding box method
+	public AABB GetBoundingBox()
+	{
+		if (_boundingBoxDirty)
+		{
+			_cachedBoundingBox = CalculateBoundingBox();
+			_boundingBoxDirty = false;
+		}
 
-            if (scene.MeshCount == 0)
-                throw new FileNotFoundException("No meshes found in the file.", fullpath);
+		return _cachedBoundingBox;
+	}
 
-            var data = new List<float>();
-            var indices = new List<int>();
-            var offset = 0;
+	private AABB CalculateBoundingBox()
+	{
+		if (Vertices.Count == 0)
+			throw new InvalidOperationException("No vertices in the mesh.");
 
-            foreach (var mesh in scene.Meshes)
-            {
-                for (var i = 0; i < mesh.VertexCount; i++)
-                {
-                    data.Add(mesh.Vertices[i].X);
-                    data.Add(mesh.Vertices[i].Y);
-                    data.Add(mesh.Vertices[i].Z);
+		var min = Vertices[0];
+		var max = Vertices[0];
 
-                    if (mesh.HasTextureCoords(0))
-                    {
-                        data.Add(mesh.TextureCoordinateChannels[0][i].X);
-                        data.Add(mesh.TextureCoordinateChannels[0][i].Y);
-                    }
-                    else
-                    {
-                        data.Add(0.0f);
-                        data.Add(0.0f);
-                    }
+		foreach (var vertex in Vertices)
+		{
+			if (vertex.X < min.X) min.X = vertex.X;
+			if (vertex.Y < min.Y) min.Y = vertex.Y;
+			if (vertex.Z < min.Z) min.Z = vertex.Z;
 
-                    if (mesh.HasNormals)
-                    {
-                        data.Add(mesh.Normals[i].X);
-                        data.Add(mesh.Normals[i].Y);
-                        data.Add(mesh.Normals[i].Z);
-                    }
-                    else
-                    {
-                        data.Add(0.0f);
-                        data.Add(0.0f);
-                        data.Add(0.0f);
-                    }
+			if (vertex.X > max.X) max.X = vertex.X;
+			if (vertex.Y > max.Y) max.Y = vertex.Y;
+			if (vertex.Z > max.Z) max.Z = vertex.Z;
+		}
 
-                    if (mesh.HasVertexColors(0))
-                    {
-                        var color = mesh.VertexColorChannels[0][i];
-                        data.Add(color.R);
-                        data.Add(color.G);
-                        data.Add(color.B);
-                        data.Add(color.A);
-                    }
-                    else
-                    {
-                        data.Add(1.0f);
-                        data.Add(1.0f);
-                        data.Add(1.0f);
-                        data.Add(1.0f);
-                    }
-                }
+		return new AABB(min, max);
+	}
 
-                for (var i = 0; i < mesh.FaceCount; i++)
-                {
-                    var face = mesh.Faces[i];
-                    for (var j = 0; j < face.IndexCount; j++) indices.Add(face.Indices[j] + offset);
-                }
+	public static RenderMesh FromModelFile(string file)
+	{
+		try
+		{
+			var fullpath = Path.Combine("Game", "Content", file);
+			var importer = new AssimpContext();
 
-                offset += mesh.VertexCount;
-            }
+			var scene = importer.ImportFile(fullpath, PostProcessSteps.Triangulate
+			                                          | PostProcessSteps.JoinIdenticalVertices
+			                                          | PostProcessSteps.FlipUVs |
+			                                          PostProcessSteps.TransformUVCoords);
 
-            return new RenderMesh
-            (
-                data.ToArray(),
-                indices.ToArray(),
-                RenderMaterial.FromSerialised(new SerialisedMaterial
-                    { Shader = "VeroEngine.Basic", Uniforms = new Dictionary<string, SerialisedUniform>() })
-            );
-        }
-        catch (Exception e)
-        {
-            return new RenderMesh();
-        }
-    }
+			if (scene.MeshCount == 0)
+				throw new FileNotFoundException("No meshes found in the file.", fullpath);
 
-    private void InitializeBuffers(float[] data, int[] indices)
-    {
-        _vertexCount = indices.Length;
+			var data = new List<float>();
+			var indices = new List<int>();
+			var offset = 0;
 
-        _vao = GL.GenVertexArray();
-        _vbo = GL.GenBuffer();
-        _ebo = GL.GenBuffer();
+			var verts = new List<Vector3>();
 
-        GL.BindVertexArray(_vao);
+			foreach (var mesh in scene.Meshes)
+			{
+				for (var i = 0; i < mesh.VertexCount; i++)
+				{
+					verts.Add(new Vector3(mesh.Vertices[i].X, mesh.Vertices[i].Y, mesh.Vertices[i].Z));
+					data.Add(mesh.Vertices[i].X);
+					data.Add(mesh.Vertices[i].Y);
+					data.Add(mesh.Vertices[i].Z);
 
-        GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-        GL.BufferData(BufferTarget.ArrayBuffer, data.Length * sizeof(float), data, BufferUsageHint.StaticDraw);
+					if (mesh.HasTextureCoords(0))
+					{
+						data.Add(mesh.TextureCoordinateChannels[0][i].X);
+						data.Add(mesh.TextureCoordinateChannels[0][i].Y);
+					}
+					else
+					{
+						data.Add(0.0f);
+						data.Add(0.0f);
+					}
 
-        GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
-        GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(int), indices,
-            BufferUsageHint.StaticDraw);
+					if (mesh.HasNormals)
+					{
+						data.Add(mesh.Normals[i].X);
+						data.Add(mesh.Normals[i].Y);
+						data.Add(mesh.Normals[i].Z);
+					}
+					else
+					{
+						data.Add(0.0f);
+						data.Add(0.0f);
+						data.Add(0.0f);
+					}
 
-        var positionSize = 3;
-        var texCoordSize = 2;
-        var normalSize = 3;
-        var colorSize = 4;
+					if (mesh.HasVertexColors(0))
+					{
+						var color = mesh.VertexColorChannels[0][i];
+						data.Add(color.R);
+						data.Add(color.G);
+						data.Add(color.B);
+						data.Add(color.A);
+					}
+					else
+					{
+						data.Add(1.0f);
+						data.Add(1.0f);
+						data.Add(1.0f);
+						data.Add(1.0f);
+					}
+				}
 
-        var stride = (positionSize + texCoordSize + normalSize + colorSize) * sizeof(float);
+				for (var i = 0; i < mesh.FaceCount; i++)
+				{
+					var face = mesh.Faces[i];
+					for (var j = 0; j < face.IndexCount; j++) indices.Add(face.Indices[j] + offset);
+				}
 
-        var offset = 0;
+				offset += mesh.VertexCount;
+			}
 
-        GL.VertexAttribPointer(0, positionSize, VertexAttribPointerType.Float, false, stride, offset);
-        GL.EnableVertexAttribArray(0);
-        offset += positionSize * sizeof(float);
+			return new RenderMesh
+			(
+				data.ToArray(),
+				indices.ToArray(),
+				RenderMaterial.FromSerialised(new SerialisedMaterial
+					{ Shader = "VeroEngine.Basic", Uniforms = new Dictionary<string, SerialisedUniform>() }),
+				verts
+			);
+		}
+		catch (Exception e)
+		{
+			return new RenderMesh();
+		}
+	}
 
-        GL.VertexAttribPointer(1, texCoordSize, VertexAttribPointerType.Float, false, stride, offset);
-        GL.EnableVertexAttribArray(1);
-        offset += texCoordSize * sizeof(float);
+	private void InitializeBuffers(float[] data, int[] indices)
+	{
+		_vertexCount = indices.Length;
 
-        GL.VertexAttribPointer(2, normalSize, VertexAttribPointerType.Float, false, stride, offset);
-        GL.EnableVertexAttribArray(2);
-        offset += normalSize * sizeof(float);
+		_vao = GL.GenVertexArray();
+		_vbo = GL.GenBuffer();
+		_ebo = GL.GenBuffer();
 
-        GL.VertexAttribPointer(3, colorSize, VertexAttribPointerType.Float, false, stride, offset);
-        GL.EnableVertexAttribArray(3);
+		GL.BindVertexArray(_vao);
 
-        GL.BindVertexArray(0);
-    }
+		GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
+		GL.BufferData(BufferTarget.ArrayBuffer, data.Length * sizeof(float), data, BufferUsageHint.StaticDraw);
 
-    public void Render(Matrix4 model, Matrix4 view, Matrix4 projection, Vector3 color, bool wireframe = false)
-    {
-        if (Material != null)
-        {
-            Material.Use();
-            var c = color.ToOpenTK();
-            GL.Uniform3(GL.GetUniformLocation(Material.GetShader().Handle, "modulate_color"), ref c);
-            GL.UniformMatrix4(GL.GetUniformLocation(Material.GetShader().Handle, "model"), false, ref model);
-            GL.UniformMatrix4(GL.GetUniformLocation(Material.GetShader().Handle, "view"), false, ref view);
-            GL.UniformMatrix4(GL.GetUniformLocation(Material.GetShader().Handle, "projection"), false,
-                ref projection);
+		GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
+		GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(int), indices,
+			BufferUsageHint.StaticDraw);
 
-            GL.BindVertexArray(_vao);
-            if (wireframe)
-            {
-                GL.DrawElements(PrimitiveType.Lines, _vertexCount, DrawElementsType.UnsignedInt, 0);
-            }
-            else
-            {
-                GL.DrawElements(PrimitiveType.Triangles, _vertexCount, DrawElementsType.UnsignedInt, 0);
-            }
+		var positionSize = 3;
+		var texCoordSize = 2;
+		var normalSize = 3;
+		var colorSize = 4;
 
-            GL.BindVertexArray(0);
-        }
-    }
+		var stride = (positionSize + texCoordSize + normalSize + colorSize) * sizeof(float);
 
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!disposed && disposing)
-        {
-            Material?.Dispose();
-            if (_vao != 0)
-            {
-                GL.DeleteVertexArray(_vao);
-                _vao = 0;
-            }
+		var offset = 0;
 
-            if (_vbo != 0)
-            {
-                GL.DeleteBuffer(_vbo);
-                _vbo = 0;
-            }
+		GL.VertexAttribPointer(0, positionSize, VertexAttribPointerType.Float, false, stride, offset);
+		GL.EnableVertexAttribArray(0);
+		offset += positionSize * sizeof(float);
 
-            if (_ebo != 0)
-            {
-                GL.DeleteBuffer(_ebo);
-                _ebo = 0;
-            }
-        }
+		GL.VertexAttribPointer(1, texCoordSize, VertexAttribPointerType.Float, false, stride, offset);
+		GL.EnableVertexAttribArray(1);
+		offset += texCoordSize * sizeof(float);
 
-        disposed = true;
-    }
+		GL.VertexAttribPointer(2, normalSize, VertexAttribPointerType.Float, false, stride, offset);
+		GL.EnableVertexAttribArray(2);
+		offset += normalSize * sizeof(float);
 
-    ~RenderMesh()
-    {
-        Dispose(false);
-    }
+		GL.VertexAttribPointer(3, colorSize, VertexAttribPointerType.Float, false, stride, offset);
+		GL.EnableVertexAttribArray(3);
+
+		GL.BindVertexArray(0);
+	}
+
+	public void Render(Matrix4 model, Matrix4 view, Matrix4 projection, Vector3 color, bool wireframe = false, int shaded = 0)
+	{
+		if (Material != null)
+		{
+			Material.Use();
+			var c = color.ToOpenTK();
+			GL.Uniform3(GL.GetUniformLocation(Material.GetShader().Handle, "modulate_color"), ref c);
+			
+			GL.Uniform1(Material.GetShader().GetUniformLocation("shade"), shaded);
+			GL.UniformMatrix4(GL.GetUniformLocation(Material.GetShader().Handle, "model"), false, ref model);
+			GL.UniformMatrix4(GL.GetUniformLocation(Material.GetShader().Handle, "view"), false, ref view);
+			GL.UniformMatrix4(GL.GetUniformLocation(Material.GetShader().Handle, "projection"), false,
+				ref projection);
+
+			GL.BindVertexArray(_vao);
+			if (wireframe)
+				GL.DrawElements(PrimitiveType.Lines, _vertexCount, DrawElementsType.UnsignedInt, 0);
+			else
+				GL.DrawElements(PrimitiveType.Triangles, _vertexCount, DrawElementsType.UnsignedInt, 0);
+
+			GL.BindVertexArray(0);
+		}
+	}
+
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!disposed && disposing)
+		{
+			Material?.Dispose();
+			if (_vao != 0)
+			{
+				GL.DeleteVertexArray(_vao);
+				_vao = 0;
+			}
+
+			if (_vbo != 0)
+			{
+				GL.DeleteBuffer(_vbo);
+				_vbo = 0;
+			}
+
+			if (_ebo != 0)
+			{
+				GL.DeleteBuffer(_ebo);
+				_ebo = 0;
+			}
+		}
+
+		disposed = true;
+	}
+
+	~RenderMesh()
+	{
+		Dispose(false);
+	}
 }

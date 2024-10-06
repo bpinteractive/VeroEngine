@@ -1,10 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "2xQ0/h4DdhU=",
+  "dgSpecHash": "v5YjDU/jJx0=",
   "success": true,
   "projectFilePath": "D:\\VeroEngine\\VeroEngine.Game\\VeroEngine.Game.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\newne\\.nuget\\packages\\assimpnet\\5.0.0-beta1\\assimpnet.5.0.0-beta1.nupkg.sha512",
+    "C:\\Users\\newne\\.nuget\\packages\\bepuphysics\\2.4.0\\bepuphysics.2.4.0.nupkg.sha512",
+    "C:\\Users\\newne\\.nuget\\packages\\bepuutilities\\2.4.0\\bepuutilities.2.4.0.nupkg.sha512",
     "C:\\Users\\newne\\.nuget\\packages\\imgui.net\\1.90.0.1\\imgui.net.1.90.0.1.nupkg.sha512",
     "C:\\Users\\newne\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
     "C:\\Users\\newne\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",

@@ -9,221 +9,223 @@ namespace VeroEngine.Core.Rendering;
 
 public class Shader : IDisposable
 {
-    private readonly string _name;
-    private bool _disposedValue;
-    private int _handle;
+	private readonly string _name;
+	private bool _disposedValue;
 
-    public int Handle => _handle;
+	private Shader(string name)
+	{
+		_name = name;
+		Handle = -1; // Default invalid handle
+		Log.Info($"Shader {name} Constructed");
+	}
 
-    private Shader(string name)
-    {
-        _name = name;
-        _handle = -1;  // Default invalid handle
-        Log.Info($"Shader {name} Constructed");
-    }
+	public int Handle { get; private set; }
 
-    public static Shader FromSerialized(SerializedShader serializedShader, string name)
-    {
-        var shader = new Shader(name);
-        shader.CompileShaders(serializedShader);
-        return shader;
-    }
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
 
-    public static Shader Load(string name)
-    {
-        Log.Info($"Loading shader {name}");
-        try
-        {
-            var cachePath = GetCachePath(name);
-            if (File.Exists(cachePath))
-            {
-                var shader = new Shader(name);
-                shader.LoadFromCache(cachePath);
-                return shader;
-            }
+	public static Shader FromSerialized(SerializedShader serializedShader, string name)
+	{
+		var shader = new Shader(name);
+		shader.CompileShaders(serializedShader);
+		return shader;
+	}
 
-            var json = File.ReadAllText(GetShaderFilePath(name));
-            var serializedShader = SerializedShader.Deserialize(json);
-            return FromSerialized(serializedShader, name);
-        }
-        catch (FileNotFoundException ex)
-        {
-            Log.Error($"Shader file not found: {ex.Message}");
-            return LoadMissingShader();
-        }
-    }
+	public static Shader Load(string name)
+	{
+		Log.Info($"Loading shader {name}");
+		try
+		{
+			var cachePath = GetCachePath(name);
+			if (File.Exists(cachePath))
+			{
+				var shader = new Shader(name);
+				shader.LoadFromCache(cachePath);
+				return shader;
+			}
 
-    private static Shader LoadMissingShader()
-    {
-        var json = File.ReadAllText(GetShaderFilePath("VeroEngine.Missing"));
-        var serializedShader = SerializedShader.Deserialize(json);
-        return FromSerialized(serializedShader, "VeroEngine.Missing");
-    }
+			var json = File.ReadAllText(GetShaderFilePath(name));
+			var serializedShader = SerializedShader.Deserialize(json);
+			return FromSerialized(serializedShader, name);
+		}
+		catch (FileNotFoundException ex)
+		{
+			Log.Error($"Shader file not found: {ex.Message}");
+			return LoadMissingShader();
+		}
+	}
 
-    public static string GetCachePath(string name)
-    {
-        return Path.Combine(Collections.GetUserDirectory(), "PipelineCache", $"{name}.bin");
-    }
-    
-    public static string GetCachePath()
-    {
-        return Path.Combine(Collections.GetUserDirectory(), "PipelineCache");
-    }
+	private static Shader LoadMissingShader()
+	{
+		var json = File.ReadAllText(GetShaderFilePath("VeroEngine.Missing"));
+		var serializedShader = SerializedShader.Deserialize(json);
+		return FromSerialized(serializedShader, "VeroEngine.Missing");
+	}
 
-    private static string GetShaderFilePath(string name)
-    {
-        return Path.Combine("Game", "Shaders", $"{name}.json");
-    }
+	public static string GetCachePath(string name)
+	{
+		return Path.Combine(Collections.GetUserDirectory(), "PipelineCache", $"{name}.bin");
+	}
 
-    private void CompileShaders(SerializedShader serializedShader)
-    {
-        _handle = GL.CreateProgram();
-        var vertsource = File.ReadAllText(Path.Combine("Game", "Shaders", "dat", serializedShader.VertexShader));
-        var fragsource = File.ReadAllText(Path.Combine("Game", "Shaders", "dat", serializedShader.FragmentShader));
+	public static string GetCachePath()
+	{
+		return Path.Combine(Collections.GetUserDirectory(), "PipelineCache");
+	}
 
-        AttachShader(vertsource, ShaderType.VertexShader);
-        AttachShader(fragsource, ShaderType.FragmentShader);
+	private static string GetShaderFilePath(string name)
+	{
+		return Path.Combine("Game", "Shaders", $"{name}.json");
+	}
 
-        GL.LinkProgram(_handle);
-        CheckLinkStatus();
+	private void CompileShaders(SerializedShader serializedShader)
+	{
+		Handle = GL.CreateProgram();
+		var vertsource = File.ReadAllText(Path.Combine("Game", "Shaders", "dat", serializedShader.VertexShader));
+		var fragsource = File.ReadAllText(Path.Combine("Game", "Shaders", "dat", serializedShader.FragmentShader));
 
-        SaveToCache();
-    }
+		AttachShader(vertsource, ShaderType.VertexShader);
+		AttachShader(fragsource, ShaderType.FragmentShader);
 
-    private void AttachShader(string shaderSource, ShaderType shaderType)
-    {
-        if (string.IsNullOrEmpty(shaderSource)) return;
+		GL.LinkProgram(Handle);
+		CheckLinkStatus();
 
-        var shader = CompileShader(shaderSource, shaderType);
-        GL.AttachShader(_handle, shader);
-        GL.DeleteShader(shader);  // Safe to delete as it's now part of the program
-    }
+		SaveToCache();
+	}
 
-    private int CompileShader(string source, ShaderType type)
-    {
-        var shader = GL.CreateShader(type);
-        GL.ShaderSource(shader, source);
-        GL.CompileShader(shader);
+	private void AttachShader(string shaderSource, ShaderType shaderType)
+	{
+		if (string.IsNullOrEmpty(shaderSource)) return;
 
-        GL.GetShader(shader, ShaderParameter.CompileStatus, out var success);
-        if (success == 0)
-        {
-            var infoLog = GL.GetShaderInfoLog(shader);
-            GL.DeleteShader(shader);  // Clean up the shader if it fails
-            throw new Exception($"Shader compilation failed ({type}): {infoLog}");
-        }
+		var shader = CompileShader(shaderSource, shaderType);
+		GL.AttachShader(Handle, shader);
+		GL.DeleteShader(shader); // Safe to delete as it's now part of the program
+	}
 
-        return shader;
-    }
+	private int CompileShader(string source, ShaderType type)
+	{
+		var shader = GL.CreateShader(type);
+		GL.ShaderSource(shader, source);
+		GL.CompileShader(shader);
 
-    private void CheckLinkStatus()
-    {
-        GL.GetProgram(_handle, GetProgramParameterName.LinkStatus, out var linkStatus);
-        if (linkStatus == 0)
-        {
-            var infoLog = GL.GetProgramInfoLog(_handle);
-            throw new Exception($"Shader program linking failed: {infoLog}");
-        }
-    }
+		GL.GetShader(shader, ShaderParameter.CompileStatus, out var success);
+		if (success == 0)
+		{
+			var infoLog = GL.GetShaderInfoLog(shader);
+			GL.DeleteShader(shader); // Clean up the shader if it fails
+			throw new Exception($"Shader compilation failed ({type}): {infoLog}");
+		}
 
-    private void LoadFromCache(string cachePath)
-    {
-        Log.Info($"Loading pipeline cache from {cachePath}");
-        var binary = File.ReadAllBytes(cachePath);
-        _handle = GL.CreateProgram();
-        var format = (BinaryFormat)GetBinaryFormat(cachePath);
-        GL.ProgramBinary(_handle, format, binary, binary.Length);
+		return shader;
+	}
 
-        ValidateCache();
-    }
+	private void CheckLinkStatus()
+	{
+		GL.GetProgram(Handle, GetProgramParameterName.LinkStatus, out var linkStatus);
+		if (linkStatus == 0)
+		{
+			var infoLog = GL.GetProgramInfoLog(Handle);
+			throw new Exception($"Shader program linking failed: {infoLog}");
+		}
+	}
 
-    private void ValidateCache()
-    {
-        GL.GetProgram(_handle, GetProgramParameterName.LinkStatus, out var success);
-        if (success == 0)
-        {
-            var infoLog = GL.GetProgramInfoLog(_handle);
-            throw new Exception($"Shader program loading from cache failed: {infoLog}");
-        }
-    }
+	private void LoadFromCache(string cachePath)
+	{
+		Log.Info($"Loading pipeline cache from {cachePath}");
+		var binary = File.ReadAllBytes(cachePath);
+		Handle = GL.CreateProgram();
+		var format = (BinaryFormat)GetBinaryFormat(cachePath);
+		GL.ProgramBinary(Handle, format, binary, binary.Length);
 
-    private void SaveToCache()
-    {
-        Log.Info($"Writing pipeline cache for {_name}");
-        GL.GetProgram(_handle, GetProgramParameterName.ProgramBinaryLength, out var binaryLength);
-        var binary = new byte[binaryLength];
-        GL.GetProgramBinary(_handle, binaryLength, out _, out var format, binary);
+		ValidateCache();
+	}
 
-        var cachePath = GetCachePath(_name);
-        Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
-        File.WriteAllBytes(cachePath, binary);
-        File.WriteAllText($"{cachePath}.format", format.ToString());
-    }
+	private void ValidateCache()
+	{
+		GL.GetProgram(Handle, GetProgramParameterName.LinkStatus, out var success);
+		if (success == 0)
+		{
+			var infoLog = GL.GetProgramInfoLog(Handle);
+			throw new Exception($"Shader program loading from cache failed: {infoLog}");
+		}
+	}
 
-    private int GetBinaryFormat(string cachePath)
-    {
-        var formatPath = $"{cachePath}.format";
-        if (File.Exists(formatPath)) return int.Parse(File.ReadAllText(formatPath));
+	private void SaveToCache()
+	{
+		Log.Info($"Writing pipeline cache for {_name}");
+		GL.GetProgram(Handle, GetProgramParameterName.ProgramBinaryLength, out var binaryLength);
+		var binary = new byte[binaryLength];
+		GL.GetProgramBinary(Handle, binaryLength, out _, out var format, binary);
 
-        throw new Exception("Shader binary format not found.");
-    }
+		var cachePath = GetCachePath(_name);
+		Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
+		File.WriteAllBytes(cachePath, binary);
+		File.WriteAllText($"{cachePath}.format", format.ToString());
+	}
 
-    public int GetUniformLocation(string name)
-    {
-        return GL.GetUniformLocation(_handle, name);
-    }
+	private int GetBinaryFormat(string cachePath)
+	{
+		var formatPath = $"{cachePath}.format";
+		if (File.Exists(formatPath)) return int.Parse(File.ReadAllText(formatPath));
 
-    public void SetUniform(string name, float value)
-    {
-        var location = GetUniformLocation(name);
-        if (location != -1) GL.Uniform1(location, value);
-    }
+		throw new Exception("Shader binary format not found.");
+	}
 
-    public void SetUniform(string name, int value)
-    {
-        var location = GetUniformLocation(name);
-        if (location != -1) GL.Uniform1(location, value);
-    }
+	public int GetUniformLocation(string name)
+	{
+		return GL.GetUniformLocation(Handle, name);
+	}
 
-    public void SetUniform(string name, Vector3 vector)
-    {
-        var location = GetUniformLocation(name);
-        if (location != -1) GL.Uniform3(location, vector.X, vector.Y, vector.Z);
-    }
+	public void SetUniform(string name, float value)
+	{
+		var location = GetUniformLocation(name);
+		if (location != -1) GL.Uniform1(location, value);
+	}
 
-    public void SetUniform(string name, Matrix4 matrix)
-    {
-        var location = GetUniformLocation(name);
-        if (location != -1) GL.UniformMatrix4(location, false, ref matrix);
-    }
+	public void SetUniform(string name, int value)
+	{
+		var location = GetUniformLocation(name);
+		if (location != -1) GL.Uniform1(location, value);
+	}
+	
 
-    public void Use()
-    {
-        GL.UseProgram(_handle);
-    }
+	public void SetUniform(string name, Vector3 vector)
+	{
+		var location = GetUniformLocation(name);
+		if (location != -1) GL.Uniform3(location, vector.X, vector.Y, vector.Z);
+	}
 
-    protected virtual void Dispose(bool disposing)
-    {
-        Log.Info($"Shader {_name} Disposed");
-        if (!_disposedValue && disposing)
-        {
-            if (_handle != -1)  // Ensure handle is valid before deleting
-            {
-                GL.DeleteProgram(_handle);
-                _handle = -1;  // Invalidate handle after deletion
-            }
-            _disposedValue = true;
-        }
-    }
+	public void SetUniform(string name, Matrix4 matrix)
+	{
+		var location = GetUniformLocation(name);
+		if (location != -1) GL.UniformMatrix4(location, false, ref matrix);
+	}
 
-    ~Shader()
-    {
-        Dispose(false);
-    }
+	public void Use()
+	{
+		SetUniform("cam_dir", (Vector3.Zero-Collections.RootTree.SceneCamera.GetFront()).Normalize());
+		GL.UseProgram(Handle);
+	}
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+	protected virtual void Dispose(bool disposing)
+	{
+		Log.Info($"Shader {_name} Disposed");
+		if (!_disposedValue && disposing)
+		{
+			if (Handle != -1) // Ensure handle is valid before deleting
+			{
+				GL.DeleteProgram(Handle);
+				Handle = -1; // Invalidate handle after deletion
+			}
+
+			_disposedValue = true;
+		}
+	}
+
+	~Shader()
+	{
+		Dispose(false);
+	}
 }

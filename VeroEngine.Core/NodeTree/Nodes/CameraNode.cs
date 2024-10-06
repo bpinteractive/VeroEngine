@@ -10,44 +10,49 @@ namespace VeroEngine.Core.NodeTree.Nodes;
 
 public class CameraNode : Node
 {
-    private Camera _renderCamera;
-    private RenderMesh _cameraMesh;
-    
-    public float FOV { get; set; } = 90;
+	private RenderMesh _cameraMesh;
+	private Camera _renderCamera;
 
-    public override void Create()
-    {
-        _renderCamera = Collections.RootTree.SceneCamera;
-        _cameraMesh = RenderMesh.FromModelFile(Path.Combine("Editor", "camera.obj"));
-    }
+	public float FOV { get; set; } = 90;
 
-    public override void Draw()
-    {
-        if (Collections.InEditorHint || !Visible)
-        {
-            var proj = Collections.RootTree.SceneCamera.GetProjectionMatrix();
-            var view = Collections.RootTree.SceneCamera.GetViewMatrix();
-            var translation = GlobalPosition.GetTranslationMatrix();
-            var rotation = GlobalRotation.GetRotationMatrix();
-            
-            float scaleFactorX = 1.0f / MathF.Tan((float)Util.Deg2Rad(FOV) / 2);
-            float scaleFactorY = FOV/90;
-            float scaleFactorZ = FOV/90;
-            var scale = Matrix4.CreateScale(new Vector3(scaleFactorX, scaleFactorY, scaleFactorZ));
+	public override void Create()
+	{
+		_renderCamera = Collections.RootTree.SceneCamera;
+		_cameraMesh = RenderMesh.FromModelFile(Path.Combine("Editor", "camera.obj"));
+	}
 
-            
-            var model = scale * rotation * translation;
-            _cameraMesh.Render(model, view, proj, new Mathematics.Vector3(255, 0, 0), true);
-        }
+	public override void Update(double delta, bool editorHint)
+	{
+		FOV = Math.Clamp(FOV, 10.0f, 179.9f);
+		base.Update(delta, editorHint);
+	}
 
-        Collections.IsCameraStolen = Visible;
-        if (!Visible) return;
-        if (Collections.InEditorHint) return;
-        _renderCamera.UpdatePosition(GlobalPosition);
-        _renderCamera.SetRotation(GlobalRotation);
-        _renderCamera.SetFieldOfView((float)Util.Deg2Rad(FOV));
-        
-        base.Draw();
-    }
-    
+	public override void Draw()
+	{
+		if (Collections.InEditorHint || !Visible)
+		{
+			var proj = Collections.RootTree.SceneCamera.GetProjectionMatrix();
+			var view = Collections.RootTree.SceneCamera.GetViewMatrix();
+			var translation = GlobalPosition.GetTranslationMatrix();
+			var rotation = GlobalRotation.GetRotationMatrix();
+
+			var scaleFactorX = 1.0f / MathF.Tan((float)Util.Deg2Rad(FOV) / 2);
+			var scaleFactorY = FOV / 90;
+			var scaleFactorZ = FOV / 90;
+			var scale = Matrix4.CreateScale(new Vector3(scaleFactorX, scaleFactorY, scaleFactorZ));
+
+
+			var model = scale * rotation * translation;
+			_cameraMesh.Render(model, view, proj, new Mathematics.Vector3(255, 0, 0), true);
+		}
+
+		Collections.IsCameraStolen = Visible;
+		if (!Visible) return;
+		if (Collections.InEditorHint) return;
+		_renderCamera.SetPosition(GlobalPosition);
+		_renderCamera.SetRotation(new(-GlobalRotation.Y, GlobalRotation.Z, GlobalRotation.X));
+		_renderCamera.SetFieldOfView((float)Util.Deg2Rad(FOV));
+
+		base.Draw();
+	}
 }

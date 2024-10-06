@@ -137,6 +137,10 @@
               "target": "Package",
               "version": "[5.0.0-beta1, )"
             },
+            "BepuPhysics": {
+              "target": "Package",
+              "version": "[2.4.0, )"
+            },
             "ImGui.NET": {
               "target": "Package",
               "version": "[1.90.0.1, )"

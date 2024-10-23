@@ -148,6 +148,10 @@
             "OpenTK": {
               "target": "Package",
               "version": "[4.8.1, )"
+            },
+            "StbImageSharp": {
+              "target": "Package",
+              "version": "[2.30.15, )"
             }
           },
           "imports": [

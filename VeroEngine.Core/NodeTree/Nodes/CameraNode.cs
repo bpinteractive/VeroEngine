@@ -14,6 +14,7 @@ public class CameraNode : Node
 	private Camera _renderCamera;
 
 	public float FOV { get; set; } = 90;
+	public bool Orthographic { get; set; } = false;
 
 	public override void Create()
 	{
@@ -29,6 +30,8 @@ public class CameraNode : Node
 
 	public override void Draw()
 	{
+		base.Draw();
+		if (Collections.IsShadowPass) return;
 		if (Collections.InEditorHint || !Visible)
 		{
 			var proj = Collections.RootTree.SceneCamera.GetProjectionMatrix();
@@ -47,12 +50,12 @@ public class CameraNode : Node
 		}
 
 		Collections.IsCameraStolen = Visible;
+		_renderCamera.Orthographic = Orthographic && Visible && !Collections.InEditorHint;
 		if (!Visible) return;
 		if (Collections.InEditorHint) return;
 		_renderCamera.SetPosition(GlobalPosition);
 		_renderCamera.SetRotation(new(-GlobalRotation.Y, GlobalRotation.Z, GlobalRotation.X));
 		_renderCamera.SetFieldOfView((float)Util.Deg2Rad(FOV));
-
-		base.Draw();
+		
 	}
 }

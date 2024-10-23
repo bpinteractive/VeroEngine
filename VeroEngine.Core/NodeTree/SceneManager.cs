@@ -7,6 +7,7 @@ using System.Text.Json;
 using VeroEngine.Core.Generic;
 using VeroEngine.Core.Mathematics;
 using VeroEngine.Core.NodeTree.Nodes;
+using VeroEngine.Core.Rendering;
 
 namespace VeroEngine.Core.NodeTree;
 
@@ -23,9 +24,15 @@ public class SceneManager
 
 	public static void ChangeScene(string scene, bool relative = true)
 	{
+		foreach (var s in Shader.InternalCache.ToList())
+		{
+			s.Value.Dispose();
+		}
+		Shader.InternalCache.Clear();
 		Collections.RootTree.Physics?.Cleanup();
 		Collections.RootTree.Physics = new ScenePhysics();
 		Collections.RootTree.Physics.Init();
+		Collections.SceneLights.Clear();
 		if (relative)
 		{
 			scene = Path.Combine(Path.Combine("Game", "Content"), scene);

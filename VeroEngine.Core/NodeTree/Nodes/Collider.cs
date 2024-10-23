@@ -92,7 +92,7 @@ public class Collider : Node
 		var scale = Matrix4.CreateScale(GlobalScale.ToOpenTK());
 
 		var model = scale * rotation * translation;
-		_mesh?.Render(model, view, proj, new Vector3(0, 0, 255), true);
+		_mesh?.Render(model, view, proj, new Vector3(0, 0, 255), true, 0);
 		base.Draw();
 	}
 }

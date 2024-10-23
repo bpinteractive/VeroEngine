@@ -78,6 +78,8 @@ internal class Program
 		// ADD BUILTIN NODES HERE PLEASE
 		_nodeClasses.Add("Node");
 		_nodeClasses.Add("MeshNode");
+		_nodeClasses.Add("PointLight");
+		_nodeClasses.Add("DirectionalLight");
 		_nodeClasses.Add("RigidBody");
 		_nodeClasses.Add("Collider");
 		_nodeClasses.Add("StaticBody");
@@ -88,6 +90,35 @@ internal class Program
 		foreach (var te in tee) _nodeClasses.Add(te.Name);
 	}
 
+	public static void newFile()
+	{
+		if (_currentScene != "") SaveScene(_currentScene);
+		else
+		{
+			var res = NativeMethods.MessageBox(IntPtr.Zero, "Do you want to create a new file\nwithout saving?", "Vero Engine", 1); // ok==1 cancel==2
+			if (res == 2)
+			{
+				return;
+			}
+		}
+		_currentScene = "";
+		Collections.RootTree.GetRoot().Destroy();
+		Collections.RootTree.SetRoot(new Node { Name = "Workspace" });
+	}
+	
+	public static void openFile()
+	{
+		if (_currentScene != "") SaveScene(_currentScene);
+		else
+		{
+			var res = NativeMethods.MessageBox(IntPtr.Zero, "Do you want to load a new file\nwithout saving?", "Vero Engine", 1); // ok==1 cancel==2
+			if (res == 2)
+			{
+				return;
+			}
+		}
+		LoadSceneMenu();
+	}
 	public static void Main()
 	{
 		_wnd = new VeroWindow();
@@ -102,6 +133,7 @@ internal class Program
 			_wnd.SetTitle("Vero Editor: " + Collections.AppConfig.Title);
 
 			Collections.ScriptingAssembly = ScriptingInterface.GetAssembly();
+			Collections.ActuallyInEditor = true;
 
 			RefreshFilesystem();
 			RefreshNodes();
@@ -144,6 +176,30 @@ internal class Program
 				_wnd.SceneTree.SceneCamera.SetRotation(r);
 			}*/
 
+			if (Keyboard.KeyJustPressed(Keys.S) && Keyboard.KeyPress(Keys.LeftControl))
+			{
+				if (_currentScene != "")
+				{
+					SaveScene(_currentScene);
+				}
+				else
+				{
+					SaveAsSceneMenu();
+				}
+			}
+			else if (Keyboard.KeyJustPressed(Keys.S) && Keyboard.KeyPress(Keys.LeftControl) && !Keyboard.KeyPress(Keys.LeftShift))
+			{
+				SaveAsSceneMenu();
+			}
+			else if (Keyboard.KeyJustPressed(Keys.N) && Keyboard.KeyPress(Keys.LeftControl))
+			{
+				newFile();
+			}
+			else if (Keyboard.KeyJustPressed(Keys.O) && Keyboard.KeyPress(Keys.LeftControl))
+			{
+				openFile();
+			}
+
 			if (_isRightMousePressed)
 			{
 				var camPos = _wnd.SceneTree.SceneCamera.GetPosition().ToSystem();
@@ -176,12 +232,7 @@ internal class Program
 				{
 					if (ImGui.MenuItem("New", "Ctrl+N"))
 					{
-						// save
-						if (_currentScene != "") SaveScene(_currentScene);
-
-						_currentScene = "";
-						Collections.RootTree.GetRoot().Destroy();
-						Collections.RootTree.SetRoot(new Node { Name = "root" });
+						newFile();
 					}
 
 					if (ImGui.MenuItem("Save", "Ctrl+S"))
@@ -195,7 +246,10 @@ internal class Program
 
 					if (ImGui.MenuItem("Save As", "Ctrl+Shift+S")) SaveAsSceneMenu();
 
-					if (ImGui.MenuItem("Open", "Ctrl+O")) LoadSceneMenu();
+					if (ImGui.MenuItem("Open", "Ctrl+O"))
+					{
+						openFile();
+					}
 
 					ImGui.EndMenu();
 				}
@@ -255,6 +309,9 @@ internal class Program
 				var title = Collections.AppConfig.Title;
 				var user = Collections.AppConfig.UserData;
 				var initscene = Collections.AppConfig.StartScene;
+				var fnt = Collections.AppConfig.Display.Font;
+				var fntS = Collections.AppConfig.Display.FontScale;
+				
 				Vector2 res = new(Collections.AppConfig.Resolution.Width,
 					Collections.AppConfig.Resolution.Height);
 				var siz = res.ToSystem();
@@ -265,6 +322,9 @@ internal class Program
 
 				if (ImGui.InputText("User Folder", ref user, 256)) Collections.AppConfig.UserData = user;
 				if (ImGui.InputText("Initial Scene", ref initscene, 256)) Collections.AppConfig.StartScene = initscene;
+				
+				if (ImGui.InputText("Font", ref fnt, 256)) Collections.AppConfig.Display.Font = fnt;
+				if(ImGui.DragInt("Font Size", ref fntS, 1, 10, 32)) Collections.AppConfig.Display.FontScale = fntS;
 
 
 				if (ImGui.DragFloat2("Resolution", ref siz))
@@ -312,12 +372,7 @@ internal class Program
 				ImGui.ShowStyleEditor();
 				ImGui.End();
 			}
-
-			ImGui.Begin("Camera Info",
-				ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize);
-			ImGui.Text("Position = " + Collections.RootTree.SceneCamera.GetPosition());
-			ImGui.Text("Rotation = " + Collections.RootTree.SceneCamera.GetRotation());
-			ImGui.End();
+			
 			ImGui.Begin("Content Properties");
 			ImGui.End();
 
@@ -333,29 +388,37 @@ internal class Program
 					}
 
 				foreach (var fsObject in _serialisedObjects)
-					if (ImGui.Button(fsObject.FileName))
+				{
+					if (ImGui.IsMouseReleased(ImGuiMouseButton.Right) && ImGui.IsItemHovered())
 					{
-						if (fsObject.IsFile)
+						// todo: copy path to clipboard
+					}
+					if (!ImGui.Button(fsObject.FileName)) continue;
+					if (fsObject.IsFile)
+					{
+						switch (fsObject.FileName.Split(".")[1])
 						{
-							switch (fsObject.FileName.Split(".")[1])
-							{
-								case "scn":
-									LoadScene(fsObject.Path);
-									break;
-								case "obj":
-									break;
-								default:
-									OpenWithDefaultProgram(fsObject.Path);
-									break;
-							}
-						}
-						else
-						{
-							Log.Info(_currentFilesystemDirectory);
-							_currentFilesystemDirectory = fsObject.Path;
-							RefreshFilesystem();
+							case "scn":
+								LoadScene(fsObject.Path);
+								break;
+							case "obj":
+								LoadScene(fsObject.Path); // as a preview
+								break;
+							case "mat":
+								// open a preview window?
+								break;
+							default:
+								OpenWithDefaultProgram(fsObject.Path);
+								break;
 						}
 					}
+					else
+					{
+						Log.Info(_currentFilesystemDirectory);
+						_currentFilesystemDirectory = fsObject.Path;
+						RefreshFilesystem();
+					}
+				}
 			}
 
 			ImGui.End();
@@ -421,6 +484,7 @@ internal class Program
 				{
 					// ignored
 				}
+				Shader.InternalCache.Clear();
 			}
 
 			ImGui.SameLine();
@@ -475,7 +539,10 @@ internal class Program
 		var f = new List<NfdFilter>();
 		f.Add(new NfdFilter { Description = "Scene File", Specification = "scn" });
 		var res = Nfd.FileSave(f);
-		// time to save :sob:
+		if (res.Status == NfdStatus.Cancel)
+		{
+			return;
+		}
 		SaveScene(res.Path);
 	}
 
@@ -484,12 +551,26 @@ internal class Program
 		var f = new List<NfdFilter>();
 		f.Add(new NfdFilter { Description = "Scene File", Specification = "scn" });
 		var res = Nfd.FileOpen(f);
-		// time to save :sob:
+		if (res.Status == NfdStatus.Cancel)
+		{
+			return;
+		}
 		LoadScene(res.Path);
 	}
 
 	private static void LoadScene(string fullpath)
 	{
+		if (fullpath.EndsWith(".obj"))
+		{
+			if(_currentScene!="")
+				SaveScene(_currentScene);
+			
+			Collections.RootTree.SetRoot(new() {Name = "Workspace"});
+			var mdl = new MeshNode();
+			mdl.Model = fullpath;
+			Collections.RootTree.AddChild(mdl);
+			return;
+		}
 		try
 		{
 			SceneManager.ChangeScene(fullpath, false);
@@ -500,8 +581,7 @@ internal class Program
 			NativeMethods.MessageBox((IntPtr)0, "Failed to open scene " + fullpath + "\n" + e, "Vero Editor",
 				0);
 		}
-
-		// PLEASE WORK
+		
 	}
 
 	private static void SaveScene(string fullpath)

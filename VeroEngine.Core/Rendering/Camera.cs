@@ -1,5 +1,6 @@
 using System;
 using OpenTK.Mathematics;
+using VeroEngine.Core.Generic;
 using VeroEngine.Core.Mathematics;
 using Matrix4 = OpenTK.Mathematics.Matrix4;
 using Vector2 = VeroEngine.Core.Mathematics.Vector2;
@@ -19,6 +20,8 @@ public class Camera
         private Vector3 _position;
         private Vector3 _up = Vector3.UnitY; // Default up vector
 
+        public bool Orthographic = false;
+
         public Camera(Vector3 position, float yaw, float pitch, float roll, float fieldOfView, float aspectRatio, float nearClip, float farClip)
         {
             _position = position;
@@ -34,6 +37,11 @@ public class Camera
         public Matrix4 GetProjectionMatrix()
         {
             _fieldOfView = Math.Clamp(_fieldOfView, 0.01f, (float)Math.PI);
+            if (Orthographic)
+            {
+                return Matrix4.CreateOrthographic(Collections.ViewportSize.X* (_fieldOfView / 500), Collections.ViewportSize.Y*
+                    (_fieldOfView/500), _nearClip, _farClip);
+            }
             return Matrix4.CreatePerspectiveFieldOfView(_fieldOfView, _aspectRatio, _nearClip, _farClip);
         }
 

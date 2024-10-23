@@ -19,7 +19,7 @@ public class MeshNode : Node
 		set
 		{
 			_model = value;
-			SetMesh(RenderMesh.FromModelFile(value)); // FIRE
+			SetMesh(RenderMesh.FromModelFile(value));
 		}
 		get => _model;
 	}
@@ -45,27 +45,39 @@ public class MeshNode : Node
 	{
 		var meshNode = base.Duplicate() as MeshNode;
 		meshNode.Model = Model;
+		meshNode.Material = Material;
 		return meshNode;
 	}
 
 	public override void Create()
 	{
 		Model = "Models/cube.obj";
+		Material = "empty";
 	}
 
 
 	public override void Draw()
 	{
 		if (!Visible) return;
+		
 		if (!DepthTest) GL.Disable(EnableCap.DepthTest);
 		var proj = Collections.RootTree.SceneCamera.GetProjectionMatrix();
 		var view = Collections.RootTree.SceneCamera.GetViewMatrix();
 		var translation = GlobalPosition.GetTranslationMatrix();
 		var rotation = GlobalRotation.GetRotationMatrix();
 		var scale = Matrix4.CreateScale(GlobalScale.ToOpenTK());
+		
 
 		var model = scale * rotation * translation;
-		_renderMesh?.Render(model, view, proj, Color, Wireframe, Shaded ? 1 : 0);
+		
+		if (Collections.IsShadowPass)
+		{
+			_renderMesh?.Render(model, view, proj, Color, Wireframe, Shaded ? 1 : 0, true);
+		}
+		else
+		{
+			_renderMesh?.Render(model, view, proj, Color, Wireframe, Shaded ? 1 : 0);
+		}
 		GL.Enable(EnableCap.DepthTest);
 		base.Draw();
 	}

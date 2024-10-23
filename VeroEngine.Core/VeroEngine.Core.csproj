@@ -19,6 +19,7 @@
         <PackageReference Include="BepuPhysics" Version="2.4.0"/>
         <PackageReference Include="ImGui.NET" Version="1.90.0.1"/>
         <PackageReference Include="OpenTK" Version="4.8.1"/>
+        <PackageReference Include="StbImageSharp" Version="2.30.15" />
     </ItemGroup>
 
 </Project>

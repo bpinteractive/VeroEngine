@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using System.Reflection;
+using OpenTK.Graphics.OpenGL4;
 using VeroEngine.Core.Generic;
 using VeroEngine.Core.Mathematics;
 using VeroEngine.Core.NodeTree.Nodes;
@@ -25,7 +27,7 @@ public class SceneTree
 		_root?.Destroy();
 		SceneCamera = null;
 		_root = new Node();
-		_root.Name = "root";
+		_root.Name = "Workspace";
 		SceneCamera = new Camera(
 			new Vector3(0, 0, 0),
 			0,
@@ -39,6 +41,12 @@ public class SceneTree
 		Physics?.Cleanup();
 		Physics = new ScenePhysics();
 		Physics.Init();
+		foreach (var s in Shader.InternalCache.ToList())
+		{
+			s.Value.Dispose();
+		}
+		Shader.InternalCache.Clear();
+		
 	}
 
 	public static Node CreateNode(string nodeType, Assembly customAssembly)
@@ -74,10 +82,53 @@ public class SceneTree
 
 	public void DrawChildren(double deltaTime)
 	{
-		Physics?.Tick(deltaTime);
-		_root.Update(deltaTime, Collections.InEditorHint);
-		_root.Draw();
+	    Physics?.Tick(deltaTime);
+	    _root.Update(deltaTime, Collections.InEditorHint);
+
+	    // // DRAW SHADOW PASS FIRST
+	    // foreach (var light in Collections.SceneLights)
+	    // {
+	    //     if (light is { } pointLight)
+	    //     {
+	    //         if (pointLight.DepthFbo == 0)
+	    //         {
+	    //             pointLight.SetupShadowMapping();
+	    //         }
+	    //         
+	    //         GL.BindFramebuffer(FramebufferTarget.Framebuffer, pointLight.DepthFbo);
+	    //         GL.Viewport(0, 0, 1024, 1024);
+	    //         
+	    //         GL.Clear(ClearBufferMask.DepthBufferBit);
+	    //         
+	    //         SceneCamera.SetPosition(pointLight.Position);
+	    //
+	    //         // Set rotation angles for each face of the cubemap
+	    //         var faceRotations = new Vector3[]
+	    //         {
+	    //             new Vector3(0.0f, 0.0f, 0.0f),        // Positive X
+	    //             new Vector3(0.0f, 180.0f * (float)Math.PI / 180.0f, 0.0f), // Negative X
+	    //             new Vector3(90.0f * (float)Math.PI / 180.0f, 0.0f, 0.0f),  // Positive Y
+	    //             new Vector3(-90.0f * (float)Math.PI / 180.0f, 0.0f, 0.0f), // Negative Y
+	    //             new Vector3(0.0f, 0.0f, 90.0f * (float)Math.PI / 180.0f),  // Positive Z
+	    //             new Vector3(0.0f, 0.0f, -90.0f * (float)Math.PI / 180.0f)  // Negative Z
+	    //         };
+	    //         
+	    //         for (int i = 0; i < 6; i++)
+	    //         {
+	    //             SceneCamera.SetRotation(faceRotations[i]);
+	    //             
+	    //             Collections.IsShadowPass = true;
+	    //             _root.Draw();
+	    //         }
+	    //         
+	    //     }
+	    // }
+	    // Collections.IsShadowPass = false;
+	    // GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+	    // no...
+	    _root.Draw();
 	}
+
 
 	public void AddChild(Node child)
 	{

@@ -1,0 +1,5 @@
+{
+  "FriendlyName": "Basic Shader that only renders to the depth buffer",
+  "VertexShader": "basic_vert.glsl",
+  "FragmentShader": "none_frag.glsl"
+}

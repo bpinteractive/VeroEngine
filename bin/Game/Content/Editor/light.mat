@@ -1,0 +1,9 @@
+{
+  "Shader": "VeroEngine.Basic",
+  "Uniforms": {
+    "Albedo": {
+      "Type": "tex",
+      "Value": "Editor/pointLight.png"
+    }
+  }
+}

@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
 using VeroEngine.Core.Mathematics;
 using VeroEngine.Core.NodeTree;
+using VeroEngine.Core.NodeTree.Nodes;
 
 // Just telling the compiler to automatically fill in the build number 1.0.X
 [assembly: AssemblyVersion("1.0.*")]
@@ -24,6 +26,12 @@ public struct Collections
 	public static SceneTree RootTree;
 
 	public static Vector2 ViewportSize;
+	
+	public static Registry Registry = new();
+	public static bool ActuallyInEditor = false;
+
+	public static List<PointLight> SceneLights = new List<PointLight>();
+	public static bool IsShadowPass = false;
 
 	public static void LoadAppConfig()
 	{

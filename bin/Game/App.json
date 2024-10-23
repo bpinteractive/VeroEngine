@@ -10,8 +10,10 @@
   "Display": {
     "EnableUiDock": true,
     "FullScreen": false,
-    "VSync": false,
+    "VSync": true,
     "FpsLimit": 300,
-    "Brightness": 1
+    "Brightness": 1,
+    "Font": "Game/Content/Fonts/OpenSans.ttf",
+    "FontScale": 20
   }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using VeroEngine.Core.Mathematics;
 using Vector3 = VeroEngine.Core.Mathematics.Vector3;
 
 namespace VeroEngine.Core.NodeTree.Nodes;
@@ -30,6 +31,12 @@ public class Node : IDisposable
 	public Vector3 Rotation { get; set; } = new(0, 0, 0);
 	public Vector3 Scale { get; set; } = new(1, 1, 1);
 	public Vector3 Color { get; set; } = new(1, 1, 1);
+
+	public Vector3 RotationDegrees
+	{
+		get => Util.Rad2Deg(Rotation);
+		set => Rotation = Util.Deg2Rad(value);
+	}
 
 	public IReadOnlyList<Node> Children => _children;
 
@@ -143,17 +150,19 @@ public class Node : IDisposable
 		copy.Name = Name;
 		copy.Position = Position;
 		copy.Rotation = Rotation;
+		copy.Scale = Scale;
 		copy.Color = Color;
 		copy.Visible = Visible;
+		
+		Parent?.AddChild(copy);
 
 		foreach (var child in _children.ToList())
 		{
 			var childCopy = child.Duplicate();
-			Parent.RemoveChild(childCopy);
+			RemoveChild(childCopy);
 			copy.AddChild(childCopy);
 		}
-
-		Parent?.AddChild(copy);
+		
 		return copy;
 	}
 

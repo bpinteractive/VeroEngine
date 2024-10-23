@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using OpenTK.Graphics.OpenGL4;
 using VeroEngine.Core.Generic;
@@ -9,6 +10,7 @@ namespace VeroEngine.Core.Rendering;
 
 public class Shader : IDisposable
 {
+	public static Dictionary<string, Shader> InternalCache = new();
 	private readonly string _name;
 	private bool _disposedValue;
 
@@ -23,19 +25,28 @@ public class Shader : IDisposable
 
 	public void Dispose()
 	{
+		Log.Warn($"Disposing of shaders is deprecated");
 		Dispose(true);
-		GC.SuppressFinalize(this);
 	}
 
 	public static Shader FromSerialized(SerializedShader serializedShader, string name)
 	{
+		if (InternalCache.ContainsKey(name))
+		{
+			return InternalCache[name];
+		}
 		var shader = new Shader(name);
 		shader.CompileShaders(serializedShader);
+		InternalCache.Add(name, shader);
 		return shader;
 	}
 
 	public static Shader Load(string name)
 	{
+		if (InternalCache.ContainsKey(name))
+		{
+			return InternalCache[name];
+		}
 		Log.Info($"Loading shader {name}");
 		try
 		{
@@ -49,7 +60,8 @@ public class Shader : IDisposable
 
 			var json = File.ReadAllText(GetShaderFilePath(name));
 			var serializedShader = SerializedShader.Deserialize(json);
-			return FromSerialized(serializedShader, name);
+			var s = FromSerialized(serializedShader, name);
+			return s;
 		}
 		catch (FileNotFoundException ex)
 		{
@@ -115,6 +127,7 @@ public class Shader : IDisposable
 		{
 			var infoLog = GL.GetShaderInfoLog(shader);
 			GL.DeleteShader(shader); // Clean up the shader if it fails
+			Log.Error($"Shader compilation failed ({type}): {infoLog}");
 			throw new Exception($"Shader compilation failed ({type}): {infoLog}");
 		}
 
@@ -127,7 +140,7 @@ public class Shader : IDisposable
 		if (linkStatus == 0)
 		{
 			var infoLog = GL.GetProgramInfoLog(Handle);
-			throw new Exception($"Shader program linking failed: {infoLog}");
+			Log.Error($"Shader program linking failed: {infoLog}");
 		}
 	}
 
@@ -148,7 +161,7 @@ public class Shader : IDisposable
 		if (success == 0)
 		{
 			var infoLog = GL.GetProgramInfoLog(Handle);
-			throw new Exception($"Shader program loading from cache failed: {infoLog}");
+			Log.Error($"Shader program loading from cache failed: {infoLog}");
 		}
 	}
 
@@ -170,7 +183,8 @@ public class Shader : IDisposable
 		var formatPath = $"{cachePath}.format";
 		if (File.Exists(formatPath)) return int.Parse(File.ReadAllText(formatPath));
 
-		throw new Exception("Shader binary format not found.");
+		Log.Error("Shader binary format not found.");
+		throw new Exception("Shader binary format not found");
 	}
 
 	public int GetUniformLocation(string name)
@@ -205,7 +219,8 @@ public class Shader : IDisposable
 
 	public void Use()
 	{
-		SetUniform("cam_dir", (Vector3.Zero-Collections.RootTree.SceneCamera.GetFront()).Normalize());
+		SetUniform("cam_dir", Collections.RootTree.SceneCamera.GetPosition().Normalize());
+		
 		GL.UseProgram(Handle);
 	}
 

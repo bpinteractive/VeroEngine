@@ -1,5 +1,5 @@
 {
   "FriendlyName": "Solid Line",
-  "VertexShader": "line_vert.glsl",
+  "VertexShader": "basic_vert.glsl",
   "FragmentShader": "line_frag.glsl"
 }

@@ -1,0 +1,475 @@
+{
+  "RootNode": {
+    "ClassName": "Node",
+    "Variables": [
+      {
+        "Key": "GlobalPosition",
+        "Value": {
+          "X": 0,
+          "Y": 0,
+          "Z": 0,
+          "Magnitude": 0
+        }
+      },
+      {
+        "Key": "GlobalRotation",
+        "Value": {
+          "X": 0,
+          "Y": 0,
+          "Z": 0,
+          "Magnitude": 0
+        }
+      },
+      {
+        "Key": "GlobalScale",
+        "Value": {
+          "X": 1,
+          "Y": 1,
+          "Z": 1,
+          "Magnitude": 1.7320508
+        }
+      },
+      {
+        "Key": "Visible",
+        "Value": true
+      },
+      {
+        "Key": "Name",
+        "Value": "Workspace"
+      },
+      {
+        "Key": "Position",
+        "Value": {
+          "X": 0,
+          "Y": 0,
+          "Z": 0,
+          "Magnitude": 0
+        }
+      },
+      {
+        "Key": "Rotation",
+        "Value": {
+          "X": 0,
+          "Y": 0,
+          "Z": 0,
+          "Magnitude": 0
+        }
+      },
+      {
+        "Key": "Scale",
+        "Value": {
+          "X": 1,
+          "Y": 1,
+          "Z": 1,
+          "Magnitude": 1.7320508
+        }
+      },
+      {
+        "Key": "Color",
+        "Value": {
+          "X": 1,
+          "Y": 1,
+          "Z": 1,
+          "Magnitude": 1.7320508
+        }
+      },
+      {
+        "Key": "RotationDegrees",
+        "Value": {
+          "X": 0,
+          "Y": 0,
+          "Z": 0,
+          "Magnitude": 0
+        }
+      }
+    ],
+    "Children": [
+      {
+        "ClassName": "PointLight",
+        "Variables": [
+          {
+            "Key": "Intensity",
+            "Value": 2.1
+          },
+          {
+            "Key": "GlobalPosition",
+            "Value": {
+              "X": -0.7,
+              "Y": 1.2,
+              "Z": -1,
+              "Magnitude": 1.7117243
+            }
+          },
+          {
+            "Key": "GlobalRotation",
+            "Value": {
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "Magnitude": 0
+            }
+          },
+          {
+            "Key": "GlobalScale",
+            "Value": {
+              "X": 1,
+              "Y": 1,
+              "Z": 1,
+              "Magnitude": 1.7320508
+            }
+          },
+          {
+            "Key": "Visible",
+            "Value": true
+          },
+          {
+            "Key": "Name",
+            "Value": "Light"
+          },
+          {
+            "Key": "Position",
+            "Value": {
+              "X": -0.7,
+              "Y": 1.2,
+              "Z": -1,
+              "Magnitude": 1.7117243
+            }
+          },
+          {
+            "Key": "Rotation",
+            "Value": {
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "Magnitude": 0
+            }
+          },
+          {
+            "Key": "Scale",
+            "Value": {
+              "X": 1,
+              "Y": 1,
+              "Z": 1,
+              "Magnitude": 1.7320508
+            }
+          },
+          {
+            "Key": "Color",
+            "Value": {
+              "X": 1,
+              "Y": 1,
+              "Z": 1,
+              "Magnitude": 1.7320508
+            }
+          },
+          {
+            "Key": "RotationDegrees",
+            "Value": {
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "Magnitude": 0
+            }
+          }
+        ],
+        "Children": []
+      },
+      {
+        "ClassName": "RotateNode",
+        "Variables": [
+          {
+            "Key": "SpinVector",
+            "Value": {
+              "X": 0,
+              "Y": 90,
+              "Z": 0,
+              "Magnitude": 90
+            }
+          },
+          {
+            "Key": "GlobalPosition",
+            "Value": {
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "Magnitude": 0
+            }
+          },
+          {
+            "Key": "GlobalRotation",
+            "Value": {
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "Magnitude": 0
+            }
+          },
+          {
+            "Key": "GlobalScale",
+            "Value": {
+              "X": 1,
+              "Y": 1,
+              "Z": 1,
+              "Magnitude": 1.7320508
+            }
+          },
+          {
+            "Key": "Visible",
+            "Value": true
+          },
+          {
+            "Key": "Name",
+            "Value": "Rotate"
+          },
+          {
+            "Key": "Position",
+            "Value": {
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "Magnitude": 0
+            }
+          },
+          {
+            "Key": "Rotation",
+            "Value": {
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "Magnitude": 0
+            }
+          },
+          {
+            "Key": "Scale",
+            "Value": {
+              "X": 1,
+              "Y": 1,
+              "Z": 1,
+              "Magnitude": 1.7320508
+            }
+          },
+          {
+            "Key": "Color",
+            "Value": {
+              "X": 1,
+              "Y": 1,
+              "Z": 1,
+              "Magnitude": 1.7320508
+            }
+          },
+          {
+            "Key": "RotationDegrees",
+            "Value": {
+              "X": 0,
+              "Y": 0,
+              "Z": 0,
+              "Magnitude": 0
+            }
+          }
+        ],
+        "Children": [
+          {
+            "ClassName": "MeshNode",
+            "Variables": [
+              {
+                "Key": "DepthTest",
+                "Value": true
+              },
+              {
+                "Key": "Wireframe",
+                "Value": false
+              },
+              {
+                "Key": "Shaded",
+                "Value": true
+              },
+              {
+                "Key": "Model",
+                "Value": "Models/cube.obj"
+              },
+              {
+                "Key": "Material",
+                "Value": "Materials/test"
+              },
+              {
+                "Key": "GlobalPosition",
+                "Value": {
+                  "X": 0,
+                  "Y": 0,
+                  "Z": 0,
+                  "Magnitude": 0
+                }
+              },
+              {
+                "Key": "GlobalRotation",
+                "Value": {
+                  "X": 0,
+                  "Y": 0,
+                  "Z": 0,
+                  "Magnitude": 0
+                }
+              },
+              {
+                "Key": "GlobalScale",
+                "Value": {
+                  "X": 1,
+                  "Y": 1,
+                  "Z": 1,
+                  "Magnitude": 1.7320508
+                }
+              },
+              {
+                "Key": "Visible",
+                "Value": true
+              },
+              {
+                "Key": "Name",
+                "Value": "Mesh"
+              },
+              {
+                "Key": "Position",
+                "Value": {
+                  "X": 0,
+                  "Y": 0,
+                  "Z": 0,
+                  "Magnitude": 0
+                }
+              },
+              {
+                "Key": "Rotation",
+                "Value": {
+                  "X": 0,
+                  "Y": 0,
+                  "Z": 0,
+                  "Magnitude": 0
+                }
+              },
+              {
+                "Key": "Scale",
+                "Value": {
+                  "X": 1,
+                  "Y": 1,
+                  "Z": 1,
+                  "Magnitude": 1.7320508
+                }
+              },
+              {
+                "Key": "Color",
+                "Value": {
+                  "X": 1,
+                  "Y": 1,
+                  "Z": 1,
+                  "Magnitude": 1.7320508
+                }
+              },
+              {
+                "Key": "RotationDegrees",
+                "Value": {
+                  "X": 0,
+                  "Y": 0,
+                  "Z": 0,
+                  "Magnitude": 0
+                }
+              }
+            ],
+            "Children": []
+          }
+        ]
+      },
+      {
+        "ClassName": "CameraNode",
+        "Variables": [
+          {
+            "Key": "FOV",
+            "Value": 90
+          },
+          {
+            "Key": "Orthographic",
+            "Value": false
+          },
+          {
+            "Key": "GlobalPosition",
+            "Value": {
+              "X": -2.1,
+              "Y": 1.7,
+              "Z": -0.9,
+              "Magnitude": 2.847806
+            }
+          },
+          {
+            "Key": "GlobalRotation",
+            "Value": {
+              "X": 0,
+              "Y": -0.72605693,
+              "Z": -0.63529986,
+              "Magnitude": 0.9647614
+            }
+          },
+          {
+            "Key": "GlobalScale",
+            "Value": {
+              "X": 1,
+              "Y": 1,
+              "Z": 1,
+              "Magnitude": 1.7320508
+            }
+          },
+          {
+            "Key": "Visible",
+            "Value": true
+          },
+          {
+            "Key": "Name",
+            "Value": "Cam"
+          },
+          {
+            "Key": "Position",
+            "Value": {
+              "X": -2.1,
+              "Y": 1.7,
+              "Z": -0.9,
+              "Magnitude": 2.847806
+            }
+          },
+          {
+            "Key": "Rotation",
+            "Value": {
+              "X": 0,
+              "Y": -0.72605693,
+              "Z": -0.63529986,
+              "Magnitude": 0.9647614
+            }
+          },
+          {
+            "Key": "Scale",
+            "Value": {
+              "X": 1,
+              "Y": 1,
+              "Z": 1,
+              "Magnitude": 1.7320508
+            }
+          },
+          {
+            "Key": "Color",
+            "Value": {
+              "X": 1,
+              "Y": 1,
+              "Z": 1,
+              "Magnitude": 1.7320508
+            }
+          },
+          {
+            "Key": "RotationDegrees",
+            "Value": {
+              "X": 0,
+              "Y": -41.6,
+              "Z": -36.4,
+              "Magnitude": 55.27676
+            }
+          }
+        ],
+        "Children": []
+      }
+    ]
+  }
+}

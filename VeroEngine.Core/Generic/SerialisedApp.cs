@@ -36,4 +36,6 @@ public class DisplaySettings
 	public bool VSync { get; set; }
 	public int FpsLimit { get; set; }
 	public float Brightness { get; set; }
+	public string Font { get; set; }
+	public int FontScale { get; set; }
 }

@@ -28,7 +28,9 @@ public class Vector3
 	public float Z { get; set; }
 
 	public float Magnitude => (float)Math.Sqrt(X * X + Y * Y + Z * Z);
-	public static Vector3 UnitY { get; set; } = new(0, 1, 0);
+	public static Vector3 UnitY { get; } = new(0, 1, 0);
+	public static Vector3 UnitX { get; } = new(1, 0, 0);
+	public static Vector3 UnitZ { get; } = new(0, 0, 1);
 
 	public Vector3 Normalize()
 	{

@@ -6,3 +6,4 @@
 - Models and materials
 - Shader caching
 - Custom nodes using reflection (scriptingassembly project)
+- editor using imgui
